@@ -1,0 +1,50 @@
+[
+  {
+    "file": "design/rs5-millmax-base.stl",
+    "triangles": 3396,
+    "closed": true,
+    "components": 1,
+    "bounds_mm": [
+      19.8,
+      28.85,
+      6.6198
+    ],
+    "volume_mm3": 2695.045
+  },
+  {
+    "file": "design/rs5-millmax-cover.stl",
+    "triangles": 3576,
+    "closed": true,
+    "components": 1,
+    "bounds_mm": [
+      28.8,
+      28.85,
+      6.4316
+    ],
+    "volume_mm3": 3487.722
+  },
+  {
+    "file": "design/rs5-millmax-print-plate.stl",
+    "triangles": 6972,
+    "closed": true,
+    "components": 2,
+    "bounds_mm": [
+      60.8,
+      28.85,
+      6.6198
+    ],
+    "volume_mm3": 6182.773
+  },
+  {
+    "file": "design/rs5-fit-gauge.stl",
+    "triangles": 2868,
+    "closed": true,
+    "components": 1,
+    "bounds_mm": [
+      19.8,
+      28.85,
+      1.2
+    ],
+    "volume_mm3": 617.91
+  }
+]
