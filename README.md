@@ -25,6 +25,9 @@ Geometry validation: base and cover each export as one closed solid; the combine
 - [Archived PRECI-DIP design](design/archive/rs2-precidip-rev-a.scad): superseded; its dimensions are not for Mill-Max.
 - [Original community STL](references/rileyharmon-rs2-connector.stl): provenance for the mounting dimensions only.
 - [RS5 wiring diagram](design/wiring.png), with the inherited-pinout limitation marked.
+- [Feather ESP32-S3 CAN test firmware](firmware/README.md): Arduino listen-only monitor, GPIO5 TX / GPIO6 RX, serial diagnostics and flashing instructions for the Adafruit 8 MB / no-PSRAM board.
+- [Makerfabs UWB camera-tracking firmware](firmware/rs5_uwb_tracker/README.md): camera-mounted AoA anchor, subject-carried tag, UART on Feather RX/GPIO38; preview by default, optional manually armed RS5 pan control. Compiled and host-tested; physical operation remains unverified.
+- [Makerfabs tag pocket enclosure](design/mauwb-tag/README.md): parameterized OpenSCAD case, fit gauge and print files for a removable 500 mAh battery; external charging, no soldered headers. Vendor PCB dimensions with provisional component heights.
 - [RS5 port illustrations](references/dji-rs5-ports.png) and [overview](references/dji-rs5-overview.png), from pages 17 and 6 of the [RS5 user manual](references/dji-rs5-user-manual.pdf).
 - [DJI's illustrated pinout](references/dji-sdk-pinout.png), from PDF page 21 / printed page 19 of the [SDK](references/dji-r-sdk-v2.5.pdf).
 
@@ -68,6 +71,8 @@ RS5 AD_COM ------- 47 kOhm ------- RS5 GND
 ```
 
 An SN65HVD230 breakout is suitable: it operates from 3.3 V and supports 1 Mbit/s. Use high-speed mode (RS low, per TI's datasheet), local supply decoupling, and check whether the module already contains a termination resistor. ESP32 GPIOs cannot connect directly to CAN-H/L. ESP32's built-in TWAI controller supplies the controller function; the transceiver supplies the electrical interface. Select GPIOs appropriate to your particular ESP32 board. A classic Arduino Uno instead needs a CAN controller as well as a transceiver.
+
+For the **Adafruit Feather ESP32-S3, 8 MB flash / no PSRAM**, the [test firmware](firmware/README.md) selects **pin 5 (GPIO5) to Waveshare CAN TX** and **pin 6 (GPIO6) from Waveshare CAN RX**, with the Feather's 3V output and common GND. GPIO4 is the Feather's I2C SCL line and is left available for its onboard devices and STEMMA QT. The firmware always listens passively at 1 Mbit/s and sends no CAN messages, acknowledgments, or error frames.
 
 The connector has approximately 203 mm (8 inches) of 24 AWG leads. Identify and gently twist the CAN-H/L pair, keeping a short transition at the connector. Run ground alongside the pair. The detect lead goes to a terminal with the 47 kOhm resistor to ground. Bare lead ends can connect to a suitable screw-terminal CAN breakout; the pogo block itself needs no soldering or crimping. Anchor the insulated wires to the rear cover's cable-tie ear, allowing a gentle bend after they leave the holes. Individually insulate unused leads.
 

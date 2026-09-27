@@ -1,0 +1,78 @@
+{
+  "source_repository": "https://github.com/Makerfabs/UWB-AOA-with-Display-STM32F103C8T6",
+  "source_commit": "34b9705edcb7feca83f652280047847d4bc03c34",
+  "board_file": "Hardware/UWB AOA with Display STM32F103C8T6 V1.1.brd",
+  "schematic_file": "Hardware/UWB AOA with Display STM32F103C8T6 V1.1.sch",
+  "units": "mm",
+  "coordinate_system": "Eagle top view; x from USB end to antenna end, y toward BAT connector",
+  "carrier": {
+    "outline_bounds": [[0, 0], [72, 32.6]],
+    "corner_radius": 1.5,
+    "hole_diameter": 3,
+    "hole_centers": [[2, 2], [2, 30.6], [70, 2], [70, 30.6]],
+    "source_layer": "20 Dimension, wires/arcs and circular hole outlines"
+  },
+  "placements": {
+    "USB-TTL": {"origin": [6.985, 9.7214], "rotation": "R270", "package": "USB-C-16P-5"},
+    "USB-NATIVE": {"origin": [6.985, 21.3868], "rotation": "R270", "package": "USB-C-16P-5"},
+    "OLED1": {"origin": [24.0284, 18.161], "rotation": "R0", "glass_outline": [32.42, 21.36]},
+    "BTN": {"origin": [42.4688, 19.9136], "rotation": "R90", "approximate_actuator_center": [42.4688, 21.9136]},
+    "RST": {"origin": [47.2186, 19.9136], "rotation": "R90", "approximate_actuator_center": [47.2186, 21.9136]},
+    "U2": {
+      "origin": [66, 16.5354],
+      "rotation": "R270",
+      "package": "UWB-X1-MAK-CA",
+      "transformed_outline_bounds": [[50, 10.0354], [82, 23.0354]],
+      "limitation": "Library footprint only; confirm actual X3-MAX tag module envelope"
+    },
+    "BAT": {
+      "origin": [8.001, 30.75],
+      "rotation": "R180",
+      "package": "PH-2.0-2P",
+      "positive_pad_1": [9.001, 30.75],
+      "ground_pad_2": [7.001, 30.75],
+      "body_outline_bounds": [[5.001, 28.95], [11.001, 33.75]]
+    }
+  },
+  "charger": {
+    "ic": "U6 TP4056",
+    "program_resistor": "R27 1.2K, ISET/PROG to GND",
+    "nominal_charge_current_mA": 1000,
+    "battery_net": "BAT pad 1 VBAT; pad 2 GND",
+    "actual_board_value_verified": false
+  },
+  "provisional_not_from_vendor_3d_data": {
+    "pcb_thickness": 1.6,
+    "underside_component_height": 2,
+    "top_clearance_including_mated_battery_plug": 10,
+    "radio_bottom_above_pcb": 2,
+    "radio_height": 4,
+    "screen_component_height": 3,
+    "usb_body_height": 3.3,
+    "mated_battery_connector_and_wire_bend": "Approximate box; measure delivered board and cable"
+  },
+  "selected_inserts": {
+    "source": "User-provided JROUTH package sizes and outside-diameter measurement",
+    "label": "M3 x 4 x 5",
+    "thread": "M3",
+    "nominal_length_mm": 4,
+    "nominal_outer_diameter_mm": 5,
+    "measured_outer_diameter_mm": 4.99,
+    "quantity": 4,
+    "trial_hole_diameter_mm": 4.6,
+    "manufacturer_hole_spec_found": false,
+    "physical_fit_verified": false
+  },
+  "selected_battery": {
+    "reference": "Adafruit 1578",
+    "url": "https://www.adafruit.com/product/1578",
+    "cell_dimensions_xyz": [36, 29, 4.75],
+    "nominal_capacity_mAh": 500,
+    "nominal_voltage": 3.7,
+    "full_voltage": 4.2,
+    "max_charge_current_mA": 500,
+    "protected": true,
+    "loose_lead_length": 102,
+    "board_connector_polarity_verified": false
+  }
+}

@@ -1,0 +1,132 @@
+# RS5 CAN monitor for Adafruit Feather ESP32-S3
+
+Open [rs5_can_monitor/rs5_can_monitor.ino](rs5_can_monitor/rs5_can_monitor.ino) in Arduino IDE. The target is the **Adafruit ESP32-S3 Feather with STEMMA QT / Qwiic, 8 MB flash, no PSRAM (product 5323)**, using its built-in TWAI controller and the Waveshare SN65HVD230 transceiver. No additional Arduino libraries are required.
+
+For the Makerfabs STM32 AoA kit, see the separate [UWB tracking sketch and setup](rs5_uwb_tracker/README.md). It keeps CAN on GPIO5/6 and adds anchor UART input on RX/GPIO38. This page describes the standalone passive CAN monitor.
+
+The firmware listens at **1,000,000 bit/s, Classical CAN**. It accepts all IDs and prints a sample of received frames, with separate counters for standard data frames on the inherited DJI IDs `0x222` and `0x223`. These settings come from the older DJI SDK and still need testing on the RS5.
+
+**This version always uses listen-only mode.** It sends no CAN messages, acknowledgments, or error frames, has no transmit command, and never switches to an active mode. A quiet bus is inconclusive: an RS5 may wait for a query, and a solitary transmitter cannot get an acknowledgment from this listener. The firmware cannot discover ground or protect against connecting a supply pad to CANH/CANL.
+
+## Wiring
+
+Use the Feather header pads labelled **5** and **6**: they are GPIO5 and GPIO6. These are not physical header positions or the pads labelled TX/RX. GPIO4 is SCL on this Feather and is shared with the onboard I2C devices and STEMMA QT; this sketch leaves it alone. The two CAN pin constants are at the top of the sketch.
+
+| Feather header label | Waveshare board |
+| --- | --- |
+| 5 (GPIO5) | CAN TX |
+| 6 (GPIO6) | CAN RX |
+| 3V (regulated 3.3 V) | 3.3V |
+| GND | GND |
+
+TX connects to TX and RX to RX on this board: CAN TX is the transceiver's input from the controller, and CAN RX is its output to the controller. They are not UART signals.
+
+After verifying the RS5 contacts:
+
+| RS5 signal | Connection |
+| --- | --- |
+| CAN-H | Waveshare CANH |
+| CAN-L | Waveshare CANL |
+| Verified GND | Common Waveshare/ESP32 GND, even though the Waveshare GND pin is on the other side |
+| Both VCC contacts | Individually insulated, unconnected |
+| SBUS_RX | Insulated, unconnected |
+| AD_COM | The project's 47 kOhm pull-down, only after identifying this contact; never a direct short |
+
+Use USB to power the Feather and its **3V** output to power the Waveshare. The RS5 accessory output must not connect to this supply. Twist CANH/CANL together. Fit or remove the gimbal adapter with all power disconnected. See the [main electrical checks](../README.md#termination-and-first-electrical-checks) for ground, pad orientation, and bus termination.
+
+Check the unpowered, disconnected Waveshare's resistance between CANH/CANL before adding a resistor: it may already have termination. Account for that resistance when checking the complete bus. The older SDK ties accessory detection to port power; whether AD_COM is required for RS5 CAN alone remains unverified.
+
+The sketch holds GPIO5 HIGH (recessive) from the beginning of setup. An optional 10 kOhm pull-up from Waveshare CAN TX to its 3.3V keeps that input high while the ESP32 GPIO is floating during reset. This does not replace pinout verification.
+
+## Flash with Arduino IDE
+
+1. Install **esp32 by Espressif Systems**, version **3.3.11** (the build used here), through Boards Manager.
+2. Open the sketch and select **Adafruit Feather ESP32-S3 No PSRAM**. Keep **Flash Size: 8MB**, **Flash Mode: QIO 80MHz**, and **Partition Scheme: TinyUF2 8MB (2MB APP/3.7MB FATFS)**. This profile already disables PSRAM.
+3. Use the Feather's USB-C connector. Keep **USB Mode: USB-OTG (TinyUSB)**, **USB CDC On Boot: Enabled**, and **Upload Mode: USB-OTG CDC (TinyUSB)**, the defaults for this board.
+4. Select the connected port and upload with the RS5 disconnected. If the board does not enter download mode automatically, hold BOOT, tap RESET, release BOOT, then select the new port and upload. Reset after the first upload if needed.
+5. Open Serial Monitor at **115200 baud**. If the startup banner has already passed, send `h`; status repeats once per second.
+
+The Feather uses native USB for serial output. Its header TX/RX pins are unused by this sketch. Uploading installs this Arduino application in place of any existing application such as CircuitPython; copy any files you need from CIRCUITPY first.
+
+## Flash with Arduino CLI
+
+Run these from the repository root. The board profile selects 8 MB flash, no PSRAM, TinyUSB serial, and the TinyUF2 partition layout.
+
+```sh
+arduino-cli compile \
+  --fqbn esp32:esp32:adafruit_feather_esp32s3_nopsram \
+  --warnings all \
+  --build-path "$PWD/tmp/firmware-build-feather" \
+  --output-dir "$PWD/tmp/firmware-feather" \
+  firmware/rs5_can_monitor
+
+arduino-cli board list
+```
+
+Replace `YOUR_PORT` below with the actual port, such as `/dev/cu.usbmodem...` on macOS or `COM5` on Windows. Close any existing serial monitor before uploading.
+
+```sh
+arduino-cli upload \
+  --fqbn esp32:esp32:adafruit_feather_esp32s3_nopsram \
+  --port YOUR_PORT \
+  --input-dir "$PWD/tmp/firmware-feather" \
+  firmware/rs5_can_monitor
+
+arduino-cli monitor --port YOUR_PORT --config baudrate=115200
+```
+
+Native USB can re-enumerate after flashing; check `board list` again if the port changes. A first upload from the ROM bootloader may require an explicit `--board-options UploadMode=default` on the upload command to skip the TinyUSB 1200-baud reset sequence; the sketch still uses TinyUSB serial after it starts.
+
+## First test and output
+
+Start with the Feather and Waveshare connected to each other and **CANH/CANL disconnected from the RS5**. With USB and any LiPo battery disconnected, check the Waveshare's CANH-to-CANL resistance and record it. Then power the Feather by USB and use DC-voltage mode (black lead in COM, red in V/ohms) to check approximately **3.3 V between Waveshare 3.3V and GND**. Keep the probe tips from bridging adjacent pins; resistance/continuity mode is only for unpowered checks.
+
+Seeing `LISTEN_ONLY RUNNING` and repeating status proves the firmware/USB/TWAI driver started. `rx=0` is expected. This does not test the transceiver's CAN path or confirm the gimbal contacts.
+
+After confirming the gimbal wiring and termination, turn all power off, connect the RS5 CANH/CANL and common ground, then power the ESP32 and RS5. Keep the gimbal's motion area clear for its own startup. Open the serial monitor and observe.
+
+An illustrative frame line (the payload below is only an example):
+
+```text
+[4200 ms] STD ID=0x222 DATA DLC=8 01 02 03 04 05 06 07 08
+```
+
+The timestamp is time since ESP32 boot when the application reads the frame, not a bus capture timestamp. `STD` means an 11-bit ID, `EXT` a 29-bit ID, and `RTR` a remote request with no payload. The monitor does not reassemble DJI packets or validate their SDK CRCs.
+
+| Output | Meaning |
+| --- | --- |
+| `rx` | Total frames read from the TWAI receive queue since boot |
+| `id222`, `id223` | Standard data frames matching the inherited DJI IDs; ID matching alone does not validate an SDK reply |
+| `bus_errors` | Driver's cumulative bus-error count; inspect bitrate, termination, continuity, and wiring if it increases |
+| `rx_missed`, `fifo_overrun` | Driver-reported receive losses; this is not a lossless bus recorder |
+| `REC`, `TEC` | Driver error counters; zero in listen-only mode does not prove electrical correctness |
+| `queued` | Frames currently waiting in the driver's receive queue |
+| `alerts` | OR of driver alert flags since the previous status report |
+| `omitted` | Frame previews omitted by the 20-per-second limit or by pausing previews; these frames still count toward `rx` |
+| `console_skipped` | Whole output lines skipped because serial was unavailable or the 4 KB console queue was full; queued lines drain in USB-sized chunks |
+
+Send `h` or `?` for help, `s` for immediate status, and `p` to toggle frame previews. Any serial line ending works. These commands only change local output. Reception continues without an open serial monitor.
+
+Valid frames are evidence that the receive path and bitrate work. Repeated frames may be retries caused by missing acknowledgments. **No frames does not mean the wiring is wrong, and zero errors does not mean it is right.** After confirming the wiring, the separate [tracker's optional query mode](rs5_uwb_tracker/README.md#optional-motion-build-after-electrical-and-preview-checks) is available as the next step if passive listening stays quiet; this monitor remains permanently passive.
+
+## Validation
+
+Compiled for `esp32:esp32:adafruit_feather_esp32s3_nopsram` with Arduino-ESP32 **3.3.11**: 359,366 bytes of application flash and 58,688 bytes of static RAM. This is a compile check; the firmware has not yet been run on the Feather or connected to an RS5.
+
+That core emits a command-line macro warning for its default hyphenated partition name (`ARDUINO_PARTITION_tinyuf2-partitions-8MB`). The build succeeds; the sketch does not use that macro.
+
+The console queue test passes with address/undefined-behavior sanitizers, covering TinyUSB's 64-byte output chunks, wraparound, partial writes, a stalled sink, and whole-line rejection on overflow. To repeat from the repository root after the firmware build has created `tmp/`:
+
+```sh
+c++ -std=c++11 -Wall -Wextra -Werror -fsanitize=address,undefined \
+  firmware/tests/console_queue_test.cpp -o tmp/console_queue_test
+./tmp/console_queue_test
+```
+
+## References
+
+- [Adafruit Feather ESP32-S3 pin descriptions](https://learn.adafruit.com/adafruit-esp32-s3-feather/pinouts)
+- [Adafruit Feather ESP32-S3 Arduino setup](https://learn.adafruit.com/adafruit-esp32-s3-feather/using-with-arduino-ide)
+- [Espressif TWAI driver used by this sketch](https://docs.espressif.com/projects/esp-idf/en/v5.4/esp32s3/api-reference/peripherals/twai.html)
+- [Arduino-ESP32 USB flashing and serial settings](https://docs.espressif.com/projects/arduino-esp32/en/latest/tutorials/cdc_dfu_flash.html)
+- [Waveshare SN65HVD230 CAN Board](https://www.waveshare.com/product/sn65hvd230-can-board.htm)

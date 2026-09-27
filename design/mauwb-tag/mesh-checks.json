@@ -1,0 +1,114 @@
+{
+  "prototype": true,
+  "revision": "C (M3 heat-set inserts)",
+  "hardware_fit_verified": false,
+  "component_heights": "provisional; measure actual board and mated BAT plug",
+  "outer_dimensions_mm": [
+    89.7,
+    54.3,
+    25.95
+  ],
+  "fasteners": {
+    "quantity": 4,
+    "thread": "M3 x 0.5",
+    "length_mm": 8,
+    "head_seat": "countersunk",
+    "heat_set_inserts_enabled": true,
+    "clearance_diameter_mm": 3.4,
+    "pilot_diameter_mm": 2.5,
+    "head_recess_diameter_mm": 7.0,
+    "boss_diameter_mm": 10.0,
+    "insert_outer_diameter_mm": 4.99,
+    "insert_length_mm": 4.0,
+    "insert_pocket_diameter_mm": 4.6,
+    "insert_pocket_depth_mm": 5.0,
+    "insert_fit_physically_verified": false,
+    "coupon_hole_diameters_mm": [
+      4.4,
+      4.5,
+      4.6,
+      4.7,
+      4.8
+    ]
+  },
+  "battery_to_radio_envelope_x_gap_mm": 8.5,
+  "volumetric_intersections_mm3": {
+    "collision": 6.679101716144942e-13,
+    "case_collision": 3.789561257387201e-13
+  },
+  "contact_note": "Zero-volume PCB support and mating-face contacts are intentional.",
+  "meshes": [
+    {
+      "file": "design/mauwb-tag/front.stl",
+      "triangles": 4136,
+      "closed": true,
+      "components": 1,
+      "bounds_mm": [
+        89.7,
+        54.3,
+        23.15
+      ],
+      "volume_mm3": 19149.965
+    },
+    {
+      "file": "design/mauwb-tag/rear.stl",
+      "triangles": 3688,
+      "closed": true,
+      "components": 1,
+      "bounds_mm": [
+        89.7,
+        54.3,
+        12.6
+      ],
+      "volume_mm3": 15128.143
+    },
+    {
+      "file": "design/mauwb-tag/shield.stl",
+      "triangles": 124,
+      "closed": true,
+      "components": 1,
+      "bounds_mm": [
+        40.0,
+        33.0,
+        1.2
+      ],
+      "volume_mm3": 1525.521
+    },
+    {
+      "file": "design/mauwb-tag/print-plate.stl",
+      "triangles": 7948,
+      "closed": true,
+      "components": 3,
+      "bounds_mm": [
+        187.4,
+        95.3,
+        23.15
+      ],
+      "volume_mm3": 35803.685
+    },
+    {
+      "file": "design/mauwb-tag/fit-gauge.stl",
+      "triangles": 996,
+      "closed": true,
+      "components": 1,
+      "bounds_mm": [
+        74.0,
+        34.6,
+        3.0
+      ],
+      "volume_mm3": 1077.308
+    },
+    {
+      "file": "design/mauwb-tag/insert-coupon.stl",
+      "triangles": 4984,
+      "closed": true,
+      "components": 1,
+      "bounds_mm": [
+        62.0,
+        23.0,
+        9.6
+      ],
+      "volume_mm3": 4903.78
+    }
+  ]
+}
