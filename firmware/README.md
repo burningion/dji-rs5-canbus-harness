@@ -4,7 +4,11 @@ Open [rs5_can_monitor/rs5_can_monitor.ino](rs5_can_monitor/rs5_can_monitor.ino) 
 
 For the Makerfabs STM32 AoA kit, see the separate [UWB tracking sketch and setup](rs5_uwb_tracker/README.md). It keeps CAN on GPIO5/6 and adds anchor UART input on RX/GPIO38. This page describes the standalone passive CAN monitor.
 
-The firmware listens at **1,000,000 bit/s, Classical CAN**. It accepts all IDs and prints a sample of received frames, with separate counters for standard data frames on the inherited DJI IDs `0x222` and `0x223`. These settings come from the older DJI SDK and still need testing on the RS5.
+The firmware listens at **1,000,000 bit/s, Classical CAN**. It accepts all IDs and prints a sample of received frames, with separate counters for standard data frames on the inherited DJI IDs `0x222` and `0x223`. The bitrate worked in the 2026-09-28 RS5 passive receive test, which showed ID `0x426`. Subsequent tests with the separate [motion bench sketch](rs5_can_motion_test/README.md#hardware-result--2026-09-28) verified SDK joint queries on 0x223, replies on 0x222, and three small yaw cycles; this passive sketch never sends commands.
+
+For the next diagnostic after successful passive reception, the separate [CAN acknowledgment monitor](rs5_can_ack_monitor/README.md) runs in normal CAN mode with automatic ACK/error signaling but no application messages or DJI commands. This original sketch remains permanently listen-only.
+
+After successful SDK joint-angle queries, the separate [finite motion bench test](rs5_can_motion_test/README.md) provides three supervised small pan cycles with telemetry, heartbeat, and angle bounds. It needs no UWB kit and never starts movement automatically.
 
 **This version always uses listen-only mode.** It sends no CAN messages, acknowledgments, or error frames, has no transmit command, and never switches to an active mode. A quiet bus is inconclusive: an RS5 may wait for a query, and a solitary transmitter cannot get an acknowledgment from this listener. The firmware cannot discover ground or protect against connecting a supply pad to CANH/CANL.
 
@@ -111,7 +115,7 @@ Valid frames are evidence that the receive path and bitrate work. Repeated frame
 
 ## Validation
 
-Compiled for `esp32:esp32:adafruit_feather_esp32s3_nopsram` with Arduino-ESP32 **3.3.11**: 359,366 bytes of application flash and 58,688 bytes of static RAM. This is a compile check; the firmware has not yet been run on the Feather or connected to an RS5.
+Compiled for `esp32:esp32:adafruit_feather_esp32s3_nopsram` with Arduino-ESP32 **3.3.11**: 359,366 bytes of application flash and 58,688 bytes of static RAM. On 2026-09-28 it was flashed and verified running on the Feather. The user's connected RS5 test received repeated standard ID `0x426` frames, including a 15-second interval with 115,383 received frames, no additional bus errors, and no reported receive losses. These results validate passive reception in that setup, not SDK query/control compatibility. See the separate [acknowledgment diagnostic results](rs5_can_ack_monitor/README.md#hardware-validation--2026-09-28) for the follow-up test.
 
 That core emits a command-line macro warning for its default hyphenated partition name (`ARDUINO_PARTITION_tinyuf2-partitions-8MB`). The build succeeds; the sketch does not use that macro.
 
