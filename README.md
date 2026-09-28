@@ -27,6 +27,7 @@ Geometry validation: base and cover each export as one closed solid; the combine
 - [RS5 wiring diagram](design/wiring.png), with the inherited-pinout limitation marked.
 - [Feather ESP32-S3 CAN test firmware](firmware/README.md): Arduino listen-only monitor, GPIO5 TX / GPIO6 RX, serial diagnostics and flashing instructions for the Adafruit 8 MB / no-PSRAM board.
 - [Finite RS5 motion bench test](firmware/rs5_can_motion_test/README.md): telemetry-gated three-cycle pan test, verified on the connected RS5 on 2026-09-28; no automatic motion on boot.
+- [RS5 Control Desk](control_ui/README.md): local mouse / PS4 controller UI for analog pan and tilt, 1–60°/s speed selection with no added travel limits, live angles, and automatic hold-to-move with release-to-stop; companion [manual-control firmware](firmware/rs5_manual_control/README.md).
 - [Makerfabs UWB camera-tracking firmware](firmware/rs5_uwb_tracker/README.md): camera-mounted AoA anchor, subject-carried tag, UART on Feather RX/GPIO38; preview by default, optional manually armed RS5 pan control. Compiled and host-tested; physical operation remains unverified.
 - [Makerfabs tag pocket enclosure](design/mauwb-tag/README.md): parameterized OpenSCAD case, fit gauge and print files for a removable 500 mAh battery; external charging, no soldered headers. Vendor PCB dimensions with provisional component heights.
 - [RS5 port illustrations](references/dji-rs5-ports.png) and [overview](references/dji-rs5-overview.png), from pages 17 and 6 of the [RS5 user manual](references/dji-rs5-user-manual.pdf).

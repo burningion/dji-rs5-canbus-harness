@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>RS5 · Control Desk</title>
+  <link rel="stylesheet" href="/style.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <main>
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="RS5 Control Desk home"><span class="brand-mark">↗</span> RS5 <span class="brand-light">CONTROL DESK</span></a>
+      <div class="pill" id="connection"><span class="dot"></span><span id="connection-label">Connecting to app…</span></div>
+    </header>
+    <div id="demo-banner" class="demo-banner" hidden>PREVIEW MODE · Simulated movement. No hardware connected.</div>
+    <section class="intro">
+      <div><p class="eyebrow">MANUAL CAMERA CONTROL</p><h1>A little more control.</h1><p class="subhead">Pan and tilt, at your pace. Roll stays fixed.</p></div>
+      <div class="session-label"><span class="dot mint"></span> LOCAL SESSION <span class="session-detail">Mac → Feather → RS5</span></div>
+    </section>
+    <section class="connection-bar" aria-label="USB connection">
+      <div class="connection-title"><span class="usb-icon">⌁</span><div><strong>Feather connection</strong><span id="port-hint">Choose your USB device to read live angles.</span></div></div>
+      <div class="connection-actions"><label class="sr-only" for="port">USB port</label><select id="port"><option value="">Looking for USB devices…</option></select><button id="refresh" class="icon-button" aria-label="Refresh USB devices">↻</button><button id="connect" class="secondary" disabled>Connect</button></div>
+    </section>
+    <div class="workspace">
+      <section class="panel movement-panel" aria-label="Movement controls">
+        <div class="panel-top"><div><p class="eyebrow">01 / INPUT</p><h2>Move the camera</h2></div><span id="active-source" class="small-badge">AUTO INPUT</span></div>
+        <div class="input-note" id="input-note">Drag the pad or hold L1 + left stick. Release to stop.</div>
+        <div class="pad-wrap">
+          <span class="pad-label pad-up">TILT UP</span><span class="pad-label pad-down">TILT DOWN</span><span class="pad-label pad-left">PAN LEFT</span><span class="pad-label pad-right">PAN RIGHT</span>
+          <div id="pad" class="pad" role="group" aria-label="Pan and tilt drag control">
+            <div class="pad-ring inner"></div><div class="pad-ring middle"></div><div class="crosshair horizontal"></div><div class="crosshair vertical"></div>
+            <div class="pad-origin"></div><div id="puck" class="puck"><span>✥</span></div>
+          </div>
+          <div id="pad-lock" class="pad-lock">CONNECT TO MOVE</div>
+        </div>
+        <div class="jog-controls" role="group" aria-label="Hold a direction to move"><button data-x="-1" data-y="0" aria-label="Hold to pan left">←</button><button data-x="0" data-y="-1" aria-label="Hold to tilt up">↑</button><span>HOLD TO MOVE</span><button data-x="0" data-y="1" aria-label="Hold to tilt down">↓</button><button data-x="1" data-y="0" aria-label="Hold to pan right">→</button></div>
+        <p id="controller-status" class="setting-help">PS4: connect to your Mac, then press a button</p>
+        <div class="input-footer"><span id="input-status"><span class="dot"></span> Mouse and controller available</span><span>RELEASE = STOP</span></div>
+      </section>
+      <aside class="right-column">
+        <section class="panel telemetry-panel" aria-label="Live angles">
+          <div class="panel-top"><p class="eyebrow">02 / LIVE POSITION</p><span id="live-badge" class="small-badge">WAITING</span></div>
+          <div class="angles"><div><span class="angle-label">PAN</span><div class="angle"><span id="yaw">—</span><small>°</small></div></div><div><span class="angle-label">TILT</span><div class="angle"><span id="pitch">—</span><small>°</small></div></div></div>
+          <div class="telemetry-foot"><span>Roll <strong id="roll">—</strong></span><span id="can-health">No telemetry yet</span></div>
+        </section>
+        <section class="panel settings-panel" aria-label="Movement settings">
+          <div class="panel-top"><p class="eyebrow">03 / RESPONSE</p><span class="small-badge">FINE CONTROL</span></div>
+          <div class="speed-heading"><label for="speed">Maximum speed</label><div><output id="speed-value" for="speed">10</output><span> °/s</span></div></div>
+          <input id="speed" type="range" min="1" max="60" step="0.5" value="10" aria-label="Maximum speed in degrees per second">
+          <div class="range-labels"><span>1°/s · SLOW</span><span>60°/s · MAX</span></div>
+          <p class="setting-help">Small movements stay gentle. Push farther to reach your selected speed.</p>
+          <div class="toggles"><label><input type="checkbox" id="invert-pan"> Reverse pan</label><label><input type="checkbox" id="invert-tilt"> Reverse tilt</label></div>
+        </section>
+        <section class="panel action-panel" aria-label="Control status">
+          <div class="control-status"><span class="dot" id="enabled-dot"></span><strong id="control-state">Waiting for connection</strong></div>
+          <p id="status-message" role="status" aria-live="polite">Connect your Feather to begin.</p>
+          <p class="limit-note">No added travel limits. Pan supports full rotation.<br>Keep cables clear of the rotating camera.</p>
+        </section>
+      </aside>
+    </div>
+    <section class="help-row">
+      <details><summary><span>Connect a PS4 controller</span><span>+</span></summary><div class="help-content"><p>Use a USB data cable, or hold <strong>SHARE + PS</strong> until the light flashes and pair <strong>DUALSHOCK 4 Wireless Controller</strong> in your Mac’s Bluetooth settings.</p><p>Open this page in Chrome or Edge, click the page, then press a controller button. The controller is detected automatically. Release L1 once after connecting.</p><p><strong>Hold L1 + left stick</strong> to pan and tilt. Release L1 to stop. Mouse controls work whenever you hold them; no mode switch is needed. Reverse an axis above if its direction feels wrong.</p></div></details>
+      <details><summary><span>Session details</span><span>+</span></summary><div class="help-content"><p id="diagnostic">Waiting for a device.</p><p>The first control you hold takes priority until released. Release both before switching devices. Leaving this window, losing the connection, or changing settings stops movement; release and hold again to continue. Space, Escape, or Circle also stops. Keep the gimbal’s power control accessible.</p><pre id="events">No events yet.</pre></div></details>
+    </section>
+    <footer><span>RS5 / CONTROL DESK</span><span>CONNECTED BY WIRE. CONTROLLED BY YOU.</span></footer>
+  </main>
+</body>
+</html>

@@ -10,6 +10,8 @@ For the next diagnostic after successful passive reception, the separate [CAN ac
 
 After successful SDK joint-angle queries, the separate [finite motion bench test](rs5_can_motion_test/README.md) provides three supervised small pan cycles with telemetry, heartbeat, and angle bounds. It needs no UWB kit and never starts movement automatically.
 
+For interactive mouse or PS4 control, use the [Control Desk UI](../control_ui/README.md) with the [manual-control sketch](rs5_manual_control/README.md). It controls pan and tilt up to 60°/s without added software travel limits, leaves roll fixed, and requires a fresh held mouse/L1 gesture plus live input and telemetry.
+
 **This version always uses listen-only mode.** It sends no CAN messages, acknowledgments, or error frames, has no transmit command, and never switches to an active mode. A quiet bus is inconclusive: an RS5 may wait for a query, and a solitary transmitter cannot get an acknowledgment from this listener. The firmware cannot discover ground or protect against connecting a supply pad to CANH/CANL.
 
 ## Wiring
