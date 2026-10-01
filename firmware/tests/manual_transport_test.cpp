@@ -6,7 +6,7 @@
 uint32_t fakeNow=0, fakeAlerts=0;
 unsigned fakePendingPolls=0, fakeStops=0, fakeUninstalls=0;
 bool fakeStalled=false;
-FakeSerial Serial;
+FakeSerial Serial, Serial1;
 twai_status_info_t fakeStatus;
 std::vector<twai_message_t> fakeFrames;
 #define CONFIG_IDF_TARGET_ESP32S3 1
@@ -15,6 +15,7 @@ static void resetFake() {
   fakeNow=0; fakeAlerts=0; fakePendingPolls=0; fakeStops=fakeUninstalls=0;
   fakeStalled=false; fakeStatus={}; fakeFrames.clear(); canReady=true;
   faultAlerts=0; faultReason="none"; lastCanStatus={}; motion.stop("idle");
+  following=false; outputPan=outputTilt=0;
 }
 int main() {
   resetFake();

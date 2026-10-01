@@ -1,6 +1,6 @@
 # RS5 Control Desk
 
-A local browser UI for manual **pan and tilt**, using a mouse or a PS4 / DualShock 4 controller. Roll speed is always zero. The USB-connected Feather talks to the RS5 through the existing Waveshare CAN wiring. The controller connects to the **Mac**, by USB or Bluetooth.
+A local browser UI for manual **pan and tilt**, using a mouse or a PS4 / DualShock 4 controller, plus **X-to-toggle UWB pan follow** using the Makerfabs STM32 AoA kit. See the [UWB wiring and setup guide](UWB_SETUP.md). Roll speed is always zero. The USB-connected Feather talks to the RS5 through the existing Waveshare CAN wiring. The controller connects to the **Mac**, by USB or Bluetooth.
 
 ## Start
 
@@ -17,8 +17,10 @@ Open **http://127.0.0.1:8765** in Chrome or Edge. The app binds only to the loca
 1. Choose the Feather USB port and click **Connect**. Wait for **LIVE** angles. Release the mouse and L1 once after connecting.
 2. **Mouse:** hold and drag the circular pad, or hold a direction button. Movement starts from that gesture; release to stop.
 3. **PS4:** hold **L1** and move the **left stick**. Movement starts automatically while L1 is held. Release L1 to stop. The stick remains analog: gentle deflection gives slow movement and full deflection reaches the selected maximum.
-4. There is **no Enable button, Stop button, or input-mode selector**. Both devices are available together. The first held control owns the gesture; release both before switching to avoid a jump to an already-held second input.
+4. Manual control has **no Enable button, Stop button, or input-mode selector**. Both devices are available together. The first held control owns the gesture; release both before switching to avoid a jump to an already-held second input.
 5. **Space**, **Escape**, or PS4 **Circle** also stops. After a stop, focus loss, disconnect, or fault, release the controls and hold again. Connecting, recovering a connection, or leaving a stick displaced never starts movement by itself.
+
+For UWB, configure the tag in the **UWB FOLLOW** panel and wait for **TAG LIVE**, then press **X** or click **Start UWB follow**. X toggles; Circle/Space/Escape stops. L1 or mouse cancels follow; release and hold again for manual control. Tag loss disarms and requires a fresh X press after reacquisition. Follow defaults to 5°/s with a separate 15°/s cap. The [setup guide](UWB_SETUP.md) includes the camera-mounted anchor wiring and direction calibration.
 
 Keep the balanced gimbal supported, unlocked, and clear of cables/obstructions, with its physical power control accessible.
 
@@ -56,7 +58,7 @@ The bridge also permits up to **20 ms** for a recently written USB setup/stop me
 
 ## Firmware
 
-Use [rs5_manual_control](../firmware/rs5_manual_control/README.md), not the finite bench-test or passive-monitor firmware. The UI requires protocol v2 with a reported 60°/s capability; it will not enable against older console formats or the earlier 10°/s manual firmware. Boot starts in normal CAN mode (acknowledging frames) with no application commands; Connect starts joint queries. Fresh held mouse/L1 input automatically requests a zero-speed control session, waits for the device to acknowledge it, and then forwards new input; release ends the session. The bridge never generates motion from cached input. The app does not change stored RS5 settings or limits.
+Use the combined [rs5_manual_control](../firmware/rs5_manual_control/README.md) for manual and UWB follow, not the finite bench-test or passive-monitor firmware. The UI requires protocol v2 with a reported 60°/s manual capability; UWB follow also requires the new `uwb` capability/status object. Older v2 firmware remains manual-only; it will not enable against older console formats or the earlier 10°/s manual firmware. Boot starts in normal CAN mode (acknowledging frames) with no application commands; Connect starts joint queries. Fresh held mouse/L1 input automatically requests a zero-speed control session, waits for the device to acknowledge it, and then forwards new input; release ends the session. The bridge never generates motion from cached input. The app does not change stored RS5 settings or limits.
 
 ## Demo and checks
 
@@ -77,6 +79,8 @@ c++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined -fno-omit-fram
 ./tmp/manual_control_test
 c++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -Ifirmware/tests/manual_stubs firmware/tests/manual_transport_test.cpp -o tmp/manual_transport_test
 ./tmp/manual_transport_test
+c++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -Ifirmware/tests/manual_stubs firmware/tests/uwb_transport_test.cpp -o tmp/uwb_transport_test
+./tmp/uwb_transport_test
 ```
 
 Tests cover analog shaping, dead zones, L1/Circle mapping, zero on release, the 60°/s speed cap, repeated pan wraparound and angles outside the former travel limits, USB/browser input expiry, replay/late-input rejection, single-tab ownership, same-origin access, and a full simulated WebSocket hold/move/release/disconnect lifecycle. A DOM/event fixture runs the actual frontend through mouse and L1 gestures without a browser or hardware. The actual sketch is also exercised against a fake TWAI driver for arbitration retry, deadline expiry, TX clearing, and preserved fault diagnostics. The C++ protocol check uses DJI's independent SDK vector.
@@ -108,3 +112,7 @@ Removed the Enable/Stop buttons and mouse/PS4 selector. Fresh held input selects
 The new CAN arbitration policy and persistent fault telemetry were flashed and hash-verified. A normal USB output-drain interval was also fixed after the first hardware connection attempt exposed a startup race. Twenty Python unit/integration tests, Node mapping/router tests, a test of the actual frontend with DOM/event fixtures, JavaScript syntax checks, and the sanitized test of actual firmware transport logic passed.
 
 A **90-second read-only hardware check received 900 validated joint replies**, with zero bus errors, TX failures, receive drops, overruns, REC or TEC. It stayed disarmed with zero requested speeds and disconnected afterward. No arbitration-loss events occurred during that check, so the original intermittent fault cause remains an inference supported by the single-shot configuration and Espressif's documented behavior. The bounded retry/deadline paths were exercised in the fake-TWAI test. Log: `tmp/rs5-ui-can-retry-soak.jsonl`. Actual mouse/PS4 motion and full-speed rotation remain for the operator; no automatic motion was used for this check.
+
+### Combined UWB update — 2026-09-29
+
+UWB follow is integrated into the same UI, bridge, and Feather firmware as mouse/PS4 control. Factory Makerfabs UART input goes to RX/GPIO38; CAN wiring stays GPIO5/6. X toggles follow with a fresh tag, while manual input cancels it. The UI includes tag selection, live range/bearing, separate direction/center/speed settings, and an expandable connection layout. See [UWB setup and validation](UWB_SETUP.md). This combined build is compiled and host-tested, but not yet flashed or physically tracking-tested. The hardware results above describe earlier manual firmware.

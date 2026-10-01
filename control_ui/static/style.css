@@ -871,3 +871,19 @@ footer {
     transition:none!important;
   }
 }
+
+.uwb-readings { display:flex; gap:36px; margin-top:18px; }
+.uwb-readings div { display:grid; gap:6px; }
+.uwb-readings span { font:10px var(--mono); color:var(--muted); }
+.uwb-readings strong { font-size:22px; font-weight:400; font-variant-numeric:tabular-nums; }
+.uwb-settings { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:12px 0 16px; }
+.uwb-settings label { display:grid; gap:7px; font-size:10px; color:var(--muted); min-width:0; }
+.uwb-settings input,.uwb-settings select { width:100%; min-width:0; max-width:none; padding:9px; background:#222825; border:1px solid #3a443d; border-radius:7px; color:var(--text); font:12px var(--mono); }
+#uwb-tag { text-transform:uppercase; }
+.uwb-panel .setting-help { margin:12px 0; }
+.wiring-help { grid-column:1/-1; }
+.connection-flow { display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-bottom:18px; color:var(--mint); }
+.connection-flow span:nth-child(odd) { border:1px solid var(--border); border-radius:7px; padding:8px 12px; background:var(--panel); }
+.wiring-help table { width:100%; border-collapse:collapse; margin:16px 0; font-size:11px; }
+.wiring-help th,.wiring-help td { text-align:left; padding:9px; border-bottom:1px solid var(--border); }
+@media(max-width:720px) { .uwb-panel { grid-column:1/-1; } }

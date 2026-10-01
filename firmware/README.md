@@ -2,7 +2,7 @@
 
 Open [rs5_can_monitor/rs5_can_monitor.ino](rs5_can_monitor/rs5_can_monitor.ino) in Arduino IDE. The target is the **Adafruit ESP32-S3 Feather with STEMMA QT / Qwiic, 8 MB flash, no PSRAM (product 5323)**, using its built-in TWAI controller and the Waveshare SN65HVD230 transceiver. No additional Arduino libraries are required.
 
-For the Makerfabs STM32 AoA kit, see the separate [UWB tracking sketch and setup](rs5_uwb_tracker/README.md). It keeps CAN on GPIO5/6 and adds anchor UART input on RX/GPIO38. This page describes the standalone passive CAN monitor.
+For Makerfabs STM32 AoA tracking through the existing UI and PS4 X button, use the [combined manual + UWB sketch](rs5_manual_control/README.md) and [connection/setup guide](../control_ui/UWB_SETUP.md). The separate [console UWB prototype](rs5_uwb_tracker/README.md) is also retained. It keeps CAN on GPIO5/6 and adds anchor UART input on RX/GPIO38. This page describes the standalone passive CAN monitor.
 
 The firmware listens at **1,000,000 bit/s, Classical CAN**. It accepts all IDs and prints a sample of received frames, with separate counters for standard data frames on the inherited DJI IDs `0x222` and `0x223`. The bitrate worked in the 2026-09-28 RS5 passive receive test, which showed ID `0x426`. Subsequent tests with the separate [motion bench sketch](rs5_can_motion_test/README.md#hardware-result--2026-09-28) verified SDK joint queries on 0x223, replies on 0x222, and three small yaw cycles; this passive sketch never sends commands.
 

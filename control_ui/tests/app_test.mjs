@@ -91,3 +91,62 @@ pad.buttons[4].pressed=true; tick();
 assert.equal(latestInput().held,true);
 assert(!socket.sent.some(m=>m.type==='arm'||m.type==='drive')); // UI uses held-input protocol only.
 console.log('Real frontend event flow: no enable/mode/stop buttons; mouse/L1 start, release, focus loss and fault recovery passed.');
+
+ids['uwb-tag'].value='1234'; ids['uwb-direction'].value='1';
+ids['uwb-zero'].value='0'; ids['uwb-speed'].value='5';
+pad.buttons[4].pressed=false; pad.buttons[1].pressed=false;
+function followTick(enabled=false, overrides={}) {
+  now+=50;
+  state({uwb_ready:true, enabled, source:enabled?'uwb':null,
+    device:{fresh:true,can_ready:true,probing:true,yaw:0,pitch:0,roll:0,bus_errors:0,replies:5,
+      uwb:{configured:true,tag:0x1234,observed:true,observed_tag:0x1234,fresh:true,following:enabled,
+        bearing:15,range_m:3,direction:1,zero:0,max_speed:5}},...overrides});
+  frame(now);
+}
+window.emit('blur'); pad.buttons[0].pressed=true;
+followTick(); assert(!latestInput().held); // X held after interruption cannot start.
+pad.buttons[0].pressed=false; followTick();
+pad.buttons[0].pressed=true; followTick();
+assert.equal(latestInput().source,'uwb');
+assert.equal(latestInput().pan,0); assert.equal(latestInput().tilt,0);
+followTick(true); assert.equal(latestInput().source,'uwb'); // Holding X never retriggers.
+pad.buttons[0].pressed=false; followTick(true);
+assert.equal(latestInput().source,'uwb'); // X is a toggle, not a deadman.
+pad.buttons[0].pressed=true; followTick(true);
+assert(!latestInput().held); // Second press stops.
+pad.buttons[0].pressed=false; followTick();
+pad.buttons[0].pressed=true; followTick();
+assert.equal(latestInput().source,'uwb');
+followTick(true, {uwb_ready:false,release_required:true,enabled:false,reason:'uwb_lost'});
+assert(!latestInput().held);
+followTick(); assert(!latestInput().held); // Reacquisition while X held cannot resume.
+pad.buttons[0].pressed=false; followTick();
+pad.buttons[0].pressed=true; followTick();
+assert.equal(latestInput().source,'uwb');
+pad.buttons[4].pressed=true; followTick(true);
+assert(!latestInput().held); // L1 cancels UWB and requires release.
+pad.buttons[0].pressed=false; pad.buttons[4].pressed=false; followTick();
+pad.buttons[4].pressed=true; followTick();
+assert.equal(latestInput().source,'gamepad');
+pad.buttons[4].pressed=false; followTick();
+pad.buttons[0].pressed=true; followTick();
+assert.equal(latestInput().source,'uwb');
+pad.buttons[1].pressed=true; followTick(true); assert(!latestInput().held);
+pad.buttons[0].pressed=false; pad.buttons[1].pressed=false; followTick();
+pad.buttons[0].pressed=true; followTick(); followTick(true);
+focused=false; window.emit('blur'); followTick(); assert(!latestInput().held);
+focused=true; followTick(); assert(!latestInput().held);
+pad.buttons[0].pressed=false; followTick();
+pad.buttons[0].pressed=true; followTick(); followTick(true);
+pads=[]; followTick(true); assert(!latestInput().held); // Controller vanished.
+// Mouse-accessible follow also works when no controller is attached.
+followTick(); ids['uwb-follow'].emit('click');
+assert.equal(latestInput().source,'uwb');
+followTick(true); assert.equal(latestInput().source,'uwb');
+ids.pad.emit('pointerdown',pointer()); assert(!latestInput().held);
+followTick(); ids['uwb-follow'].emit('click'); followTick(true);
+now+=200; frame(now); assert(!latestInput().held); // Animation-loop pause cancels follow.
+followTick(); ids['uwb-follow'].emit('click'); followTick(true);
+ids['uwb-speed'].value='6'; ids['uwb-speed'].emit('input'); followTick();
+assert(!latestInput().held); assert(ids['uwb-follow'].disabled);
+console.log('Real frontend UWB flow: X toggle, no held-X restart, Circle/manual/focus/disconnect/stall stops and settings gating passed.');

@@ -16,7 +16,7 @@
     </header>
     <div id="demo-banner" class="demo-banner" hidden>PREVIEW MODE · Simulated movement. No hardware connected.</div>
     <section class="intro">
-      <div><p class="eyebrow">MANUAL CAMERA CONTROL</p><h1>A little more control.</h1><p class="subhead">Pan and tilt, at your pace. Roll stays fixed.</p></div>
+      <div><p class="eyebrow">CAMERA CONTROL + UWB FOLLOW</p><h1>A little more control.</h1><p class="subhead">Pan and tilt by hand. Follow your tag with X.</p></div>
       <div class="session-label"><span class="dot mint"></span> LOCAL SESSION <span class="session-detail">Mac → Feather → RS5</span></div>
     </section>
     <section class="connection-bar" aria-label="USB connection">
@@ -37,7 +37,7 @@
         </div>
         <div class="jog-controls" role="group" aria-label="Hold a direction to move"><button data-x="-1" data-y="0" aria-label="Hold to pan left">←</button><button data-x="0" data-y="-1" aria-label="Hold to tilt up">↑</button><span>HOLD TO MOVE</span><button data-x="0" data-y="1" aria-label="Hold to tilt down">↓</button><button data-x="1" data-y="0" aria-label="Hold to pan right">→</button></div>
         <p id="controller-status" class="setting-help">PS4: connect to your Mac, then press a button</p>
-        <div class="input-footer"><span id="input-status"><span class="dot"></span> Mouse and controller available</span><span>RELEASE = STOP</span></div>
+        <div class="input-footer"><span id="input-status"><span class="dot"></span> Mouse and controller available</span><span>CIRCLE = STOP</span></div>
       </section>
       <aside class="right-column">
         <section class="panel telemetry-panel" aria-label="Live angles">
@@ -47,11 +47,26 @@
         </section>
         <section class="panel settings-panel" aria-label="Movement settings">
           <div class="panel-top"><p class="eyebrow">03 / RESPONSE</p><span class="small-badge">FINE CONTROL</span></div>
-          <div class="speed-heading"><label for="speed">Maximum speed</label><div><output id="speed-value" for="speed">10</output><span> °/s</span></div></div>
+          <div class="speed-heading"><label for="speed">Manual maximum speed</label><div><output id="speed-value" for="speed">10</output><span> °/s</span></div></div>
           <input id="speed" type="range" min="1" max="60" step="0.5" value="10" aria-label="Maximum speed in degrees per second">
           <div class="range-labels"><span>1°/s · SLOW</span><span>60°/s · MAX</span></div>
           <p class="setting-help">Small movements stay gentle. Push farther to reach your selected speed.</p>
           <div class="toggles"><label><input type="checkbox" id="invert-pan"> Reverse pan</label><label><input type="checkbox" id="invert-tilt"> Reverse tilt</label></div>
+        </section>
+        <section class="panel uwb-panel" aria-label="UWB follow">
+          <div class="panel-top"><p class="eyebrow">04 / UWB FOLLOW</p><span id="uwb-badge" class="small-badge">WAITING</span></div>
+          <div class="uwb-readings"><div><span>Bearing</span><strong id="uwb-bearing">—</strong></div><div><span>Distance</span><strong id="uwb-range">—</strong></div></div>
+          <p id="uwb-observed" class="setting-help">No recent anchor report</p>
+          <div id="uwb-settings" class="uwb-settings">
+            <label>Tag ID (hex)<input id="uwb-tag" type="text" maxlength="4" pattern="[0-9a-fA-F]{4}" placeholder="e.g. 1234" autocomplete="off" spellcheck="false"></label>
+            <label>Follow limit (°/s)<input id="uwb-speed" type="number" min="1" max="15" step="0.5" value="5"></label>
+            <label>Follow direction<select id="uwb-direction"><option value="1">Normal (+)</option><option value="-1">Reverse (−)</option></select></label>
+            <label>Center offset (°)<input id="uwb-zero" type="number" min="-30" max="30" step="0.1" value="0"></label>
+          </div>
+          <button id="uwb-apply" class="secondary" disabled>Apply UWB settings</button>
+          <p id="uwb-status" class="setting-help" role="status">Connect the Feather to see your anchor.</p>
+          <button id="uwb-follow" class="primary" disabled>Start UWB follow · X</button>
+          <p class="limit-note">Pan only. X toggles follow; Circle stops.<br>L1 or mouse cancels; release and hold again to steer.</p>
         </section>
         <section class="panel action-panel" aria-label="Control status">
           <div class="control-status"><span class="dot" id="enabled-dot"></span><strong id="control-state">Waiting for connection</strong></div>
@@ -61,6 +76,20 @@
       </aside>
     </div>
     <section class="help-row">
+      <details class="wiring-help"><summary><span>UWB connection layout &amp; first setup</span><span>+</span></summary><div class="help-content">
+        <div class="connection-flow" aria-label="Tracking signal path"><span>Tag on subject</span><span>→ UWB →</span><span>Anchor on camera</span><span>→ UART →</span><span>Feather</span><span>→ CAN →</span><span>RS5</span></div>
+        <p>Mount the anchor so it <strong>turns with the lens</strong>, with its measurement plane horizontal. Keep the camera approximately level. This kit tracks horizontal bearing, not subject height. A handle-mounted anchor needs a different controller.</p>
+        <table><thead><tr><th>From</th><th>To</th></tr></thead><tbody>
+          <tr><td>Anchor TXD1 / PA9 (J2 pin 4)</td><td>Feather RX / GPIO38</td></tr>
+          <tr><td>Anchor GND (J2 pin 2)</td><td>Feather GND</td></tr>
+          <tr><td>Feather 5 / 6</td><td>Waveshare TX / RX</td></tr>
+          <tr><td>Feather 3V / GND</td><td>Waveshare 3.3V / GND</td></tr>
+          <tr><td>Waveshare CANH / CANL / GND</td><td>Existing verified RS5 CANH / CANL / GND</td></tr>
+        </tbody></table>
+        <p>Identify pads by silkscreen and the Makerfabs V1.1 schematic, not a viewing-angle pin count. UART is <strong>3.3 V, 115200 8N1</strong>. Leave Feather TX/GPIO39 and anchor RXD1 unconnected. Power the anchor and Feather by separate USB supplies with common ground; power the tag by USB or its supported battery. Keep supply rails and RS5 accessory VCC separate.</p>
+        <p>Keep the Makerfabs factory firmware. Pair <strong>one tag</strong> in AOA System over the anchor’s USB-NATIVE port and select JSON output (<code>USER_CMD 0</code>, then <code>SAVE</code>). Enter the received short tag ID above and apply settings. Wait for TAG LIVE before pressing X. Preview mode uses tag <strong>1234</strong>.</p>
+        <p>Start at 5°/s with the tag 2–5 m ahead and slightly off center. Confirm the camera turns toward it; stop and reverse follow direction if it moves away. Use center offset for mounting alignment. Tag loss, leaving this window, or connection loss stops follow; reacquire and press X again. Readings must arrive at least every 300 ms. Keep the tag within ±55° and 0.75–20 m.</p>
+      </div></details>
       <details><summary><span>Connect a PS4 controller</span><span>+</span></summary><div class="help-content"><p>Use a USB data cable, or hold <strong>SHARE + PS</strong> until the light flashes and pair <strong>DUALSHOCK 4 Wireless Controller</strong> in your Mac’s Bluetooth settings.</p><p>Open this page in Chrome or Edge, click the page, then press a controller button. The controller is detected automatically. Release L1 once after connecting.</p><p><strong>Hold L1 + left stick</strong> to pan and tilt. Release L1 to stop. Mouse controls work whenever you hold them; no mode switch is needed. Reverse an axis above if its direction feels wrong.</p></div></details>
       <details><summary><span>Session details</span><span>+</span></summary><div class="help-content"><p id="diagnostic">Waiting for a device.</p><p>The first control you hold takes priority until released. Release both before switching devices. Leaving this window, losing the connection, or changing settings stops movement; release and hold again to continue. Space, Escape, or Circle also stops. Keep the gimbal’s power control accessible.</p><pre id="events">No events yet.</pre></div></details>
     </section>

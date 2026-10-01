@@ -5,6 +5,7 @@ import asyncio
 from collections import deque
 from contextlib import suppress
 import json
+import math
 from pathlib import Path
 import secrets
 import sys
@@ -27,22 +28,36 @@ class DemoDevice:
         self.armed = self.probing = False
         self.yaw = self.pitch = self.pan = self.tilt = 0.0
         self.reason = "idle"
+        self.following = self.uwb_configured = False
+        self.uwb_tag = 0
+        self.uwb_direction, self.uwb_zero, self.uwb_max = 1, 0, 5
+        self.tag_visible = True
+        self.bearing = 15.0
 
     def send(self, line):
         args = line.split()
         if args[0] in ("stop", "idle", "probe"):
             self.armed = False
+            self.following = False
             self.pan = self.tilt = 0
             self.token += 1
             self.reason = "operator_stop"
             if args[0] != "stop":
                 self.probing = args[0] == "probe"
-        elif args[0] == "arm" and int(args[1]) == self.token:
+        elif args[0] == "uwb" and int(args[1]) == self.token:
+            self.send("stop")
+            self.uwb_tag, self.uwb_direction = int(args[3]), int(args[4])
+            self.uwb_zero, self.uwb_max = int(args[5])/10, int(args[6])/10
+            self.uwb_configured = True
+        elif args[0] in ("arm", "track") and int(args[1]) == self.token:
             self.armed = True
+            self.following = args[0] == "track"
             self.last_drive = time.monotonic()
             self.reason = "enabled"
         elif args[0] == "drive" and self.armed and int(args[1]) == self.token:
             self.pan, self.tilt = int(args[4])/10, int(args[5])/10
+            self.last_drive = time.monotonic()
+        elif args[0] == "follow" and self.armed and self.following and int(args[1]) == self.token:
             self.last_drive = time.monotonic()
 
     def status(self):
@@ -51,6 +66,16 @@ class DemoDevice:
         if self.armed and now - self.last_drive > .3:
             self.send("stop")
             self.reason = "input_timeout"
+        uwb_fresh = self.uwb_configured and self.uwb_tag == 0x1234 and self.tag_visible
+        if self.following and not uwb_fresh:
+            self.send("stop")
+            self.reason = "uwb_lost"
+        if self.following:
+            error = self.bearing - self.uwb_zero
+            target = math.copysign(min(self.uwb_max, max(0, abs(error)-3)), error) * self.uwb_direction
+            self.pan += max(-45*dt, min(45*dt, target-self.pan))
+            self.tilt = 0
+            self.bearing -= self.pan * dt
         self.yaw = (self.yaw - self.pan * dt + 180) % 360 - 180
         self.pitch += self.tilt * dt
         return json.dumps(dict(type="device", protocol=Bridge.PROTOCOL, max_speed_dps=Bridge.MAX_SPEED,
@@ -58,7 +83,13 @@ class DemoDevice:
             token=self.token, armed=self.armed, can_ready=True, fresh=self.probing,
             ready=self.probing, probing=self.probing, yaw=round(self.yaw, 1), pitch=round(self.pitch, 1),
             roll=0, pan_speed=self.pan, tilt_speed=self.tilt, replies=int((now-self.start)*10),
-            reason=self.reason, bus_errors=0, rx_missed=0, fifo_overrun=0, rec=0, tec=0))
+            reason=self.reason, bus_errors=0, rx_missed=0, fifo_overrun=0, rec=0, tec=0,
+            uwb=dict(configured=self.uwb_configured, tag=self.uwb_tag, observed=self.tag_visible,
+                observed_tag=0x1234, fresh=uwb_fresh, following=self.following,
+                bearing=round(self.bearing, 1), range_m=3.0, age_ms=0 if uwb_fresh else 4294967295,
+                reports=int((now-self.start)*10), bad=0, direction=self.uwb_direction,
+                zero=self.uwb_zero, max_speed=self.uwb_max,
+                reason="tracking" if uwb_fresh else "waiting for tag")))
 
 
 class Controller:
@@ -219,6 +250,9 @@ def create_app(demo=False, port=8765):
                     elif action == "input":
                         current = any(data.get("ticket") == t and time.monotonic()-at <= .25 for t, at in tickets)
                         controller.bridge.input(data, current)
+                    elif action == "uwb_config":
+                        current = any(data.get("ticket") == t and time.monotonic()-at <= .25 for t, at in tickets)
+                        controller.bridge.configure_uwb(data, current)
                     else:
                         raise ControlError("Unknown UI message")
                 except (ControlError, ValueError, TypeError) as exc:

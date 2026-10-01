@@ -57,3 +57,18 @@ router.step(mouseUp, psUp, true);
 assert.equal(router.step(mouseDown, psUp, true).source, 'mouse');
 assert(!router.step(mouseUp, psUp, true).held);
 console.log('Automatic device selection, first-hold ownership, release-to-stop and no held-input restart passed.');
+
+const { PressEdge } = await import('../static/input.mjs');
+const cross = new PressEdge();
+assert(!cross.sample(true, true)); // Held on attach is not a press.
+assert(!cross.sample(false, true));
+assert(cross.sample(true, true));
+assert(!cross.sample(true, true));
+assert(!cross.sample(false, false)); // Release while unavailable doesn't prime.
+assert(!cross.sample(true, true));
+cross.sample(false, true);
+assert(cross.sample(true, true));
+cross.reset(); assert(!cross.sample(true, true));
+pad.mapping='standard'; pad.buttons[0].pressed=true;
+assert(gamepadInput(pad).follow);
+console.log('X standard mapping and release-before-toggle edge detection passed.');

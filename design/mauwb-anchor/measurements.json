@@ -1,0 +1,248 @@
+{
+  "units": "mm",
+  "revision": "E - rear wire exit and complete four-part print plate",
+  "photo": "User supplied IMG_4084.jpeg, overhead view, 2026-09-29",
+  "coordinates": {
+    "x": "USB end toward lens",
+    "y": "across camera, antenna baseline",
+    "z": "up toward display"
+  },
+  "carrier_source": {
+    "repository": "https://github.com/Makerfabs/UWB-AOA-with-Display-STM32F103C8T6",
+    "commit": "34b9705edcb7feca83f652280047847d4bc03c34",
+    "file": "Hardware/UWB AOA with Display STM32F103C8T6 V1.1.brd",
+    "outline": [
+      72,
+      32.6
+    ],
+    "hole_diameter": 3,
+    "hole_centers": [
+      [
+        2,
+        2
+      ],
+      [
+        2,
+        30.6
+      ],
+      [
+        70,
+        2
+      ],
+      [
+        70,
+        30.6
+      ]
+    ],
+    "delivered_anchor_revision_verified": false
+  },
+  "radio_source": {
+    "file": "Doc/3\u3001UWB-X3\uff08DW3000)\u7cfb\u5217\u5c04\u9891\u6a21\u7ec4\u8bf4\u660e\u624b\u518c.pdf",
+    "page": 3,
+    "model": "X3-AOA (CA)",
+    "table_dimension_string": "33*36*3.5mm",
+    "interpretation_width_height_depth": [
+      33,
+      36,
+      3.5
+    ],
+    "installed_offsets_from_vendor": false,
+    "installed_offsets_verified": false
+  },
+  "radio_trial_envelope": {
+    "rear_face_x": 68,
+    "lower_y": -0.2,
+    "header_bounds_xy": [
+      [
+        66.8,
+        0.3
+      ],
+      [
+        71,
+        32.3
+      ]
+    ],
+    "header_height_above_carrier_top": 8,
+    "basis": "User reports installed antenna front is flush with PCB front edge and covers front mounting holes. Rear x=68 inferred from 72 mm carrier length minus approximate 4 mm module depth. Header shifted with module, retaining provisional relative envelope.",
+    "module_bottom_above_carrier_underside": 6.11,
+    "module_bottom_basis": "42.11 user measured total minus 36 mm module height from manual",
+    "front_face_x": 72
+  },
+  "battery": {
+    "label_from_photo": "PKCELL LP503035 3.7V 500mAh",
+    "bare_cell_nominal_length_width_height": [
+      35,
+      30,
+      5
+    ],
+    "packed_trial_envelope_length_width_height": [
+      35.5,
+      29,
+      4.65
+    ],
+    "packed_size_verified": true,
+    "protection_circuit_verified": false,
+    "connector_polarity_verified": false,
+    "maximum_charge_current_mA_from_cell_specification": 500,
+    "dimension_source": "User measurements: 29 x 35.5 x 4.65 mm, 2026-09-29"
+  },
+  "mount": {
+    "user_preference": "Direct attachment to two existing threaded camera cage holes; replace central shoe mount",
+    "selected_interface": "Two smooth clearance holes in base; screws insert from inside tray into threaded cage",
+    "hole_spacing_center_to_center": 26.48,
+    "hole_spacing_direction": "Y / camera left-right, confirmed by user",
+    "cage_opening_diameter_approx": 5.16,
+    "cage_thread": "Unknown; user has screws that fit",
+    "measurement_source": "User caliper measurements and clarification, 2026-09-30",
+    "hole_centers_xy": [
+      [
+        57,
+        3.06
+      ],
+      [
+        57,
+        29.54
+      ]
+    ],
+    "pair_midpoint_xy": [
+      57,
+      16.3
+    ],
+    "centering_basis": "Midpoint aligned with radio module center across camera; actual cage midpoint relative to lens not measured",
+    "printed_clearance_diameter": 6.8,
+    "head_pocket_diameter": 10.2,
+    "head_pocket_depth": 6.9,
+    "screw_seating_thickness": 2.4,
+    "screw_length": "Select from measured cage depth; projection below base = under-head screw length minus 2.4 mm",
+    "camera_cage_fit_verified": false,
+    "checked_screw_envelope_diameter_head_diameter_head_height": [
+      6.23,
+      9.38,
+      6.23
+    ],
+    "screw_dimension_source": "User approximate measurements of existing fitting screw, 2026-09-30",
+    "physical_screw_fit_verified": false,
+    "head_to_shield_clearance": 0.67,
+    "mount_holes_and_screw_recesses_unchanged_from_revision_b": true,
+    "cage_mount_holes_and_seats_unchanged": true
+  },
+  "remaining_checks": [
+    "Delivered carrier revision and holes",
+    "Physical fit of inferred x=68...72 antenna envelope and repositioned lid opening/hood",
+    "Highest underside part, display and mated battery plug",
+    "Camera/cage contact face, lens alignment, printed top closure fit and vertical lid access and gimbal swept clearance",
+    "Case vs bare-board bearing and RF performance",
+    "Design PCB screw mounts and validate retention, header clearance and front-hole access; check module projections and lead slack",
+    "Printed fit of measured cage screws, thread engagement and available cage hole depth",
+    "Rear wire routing, bundle clearance and tie band sitting inside its underside recess"
+  ],
+  "radio_user_measurements": {
+    "width": 33,
+    "height_above_carrier_underside": 42.11,
+    "lower_module_depth_approx": 4,
+    "source": "User caliper measurements, 2026-09-29",
+    "front_face_alignment": "Flush with front edge of main PCB, user report 2026-09-30",
+    "front_mounting_holes_covered_when_installed": true
+  },
+  "closure": {
+    "reason": "Revision C lid pillars collide with antenna, which covers front PCB holes after installation. Removing those pillars left PCB retention unresolved; prior independent-fastening assumption was incorrect.",
+    "interface": "Four M3 x 8 countersunk screws inserted downward through lid into heat-set inserts in base posts",
+    "screw_centers_xy": [
+      [
+        8,
+        -6.2
+      ],
+      [
+        45,
+        -6.2
+      ],
+      [
+        22,
+        38
+      ],
+      [
+        45,
+        38
+      ]
+    ],
+    "post_diameter": 9.4,
+    "post_top_z": 23.7,
+    "insert_trial_pocket_diameter": 4.6,
+    "insert_pocket_depth": 5,
+    "insert_length": 4,
+    "lid_seat_thickness": 2.8,
+    "post_to_lid_axial_clearance": 0.2,
+    "reason_for_asymmetric_pattern": "Rear positive-Y post moves forward to clear tall battery connector",
+    "screwdriver_shaft_envelope_diameter": 8,
+    "sampled_vertical_lid_lift_offsets": [
+      0.2,
+      1.6,
+      10,
+      30,
+      60
+    ],
+    "reprint": [
+      "base",
+      "cover"
+    ],
+    "reuse": [
+      "revision-D hood",
+      "existing shield",
+      "existing cage, lid and hood screws"
+    ],
+    "physical_access_verified": false,
+    "cage_screw_access": "Remove cover/hood from above; detach antenna as needed to reach PCB screws, release/lift PCB, remove shield, then undo cage screws",
+    "lid_pcb_locating_pillars": 0,
+    "pcb_retention": "Incomplete: 5 mm-diameter supports have 3.1 mm-diameter, 1.2 mm-deep legacy locating sockets, not screw mounts. Lid does not retain PCB. Base and print plate require a PCB mounting revision.",
+    "continuous_radio_sweep_travel": 60,
+    "pcb_mounting_complete": false
+  },
+  "wire_exit": {
+    "request": "User requested wires leave at rear, opposite antenna, 2026-09-30",
+    "face": "Rear / negative X / USB-display end",
+    "opening_count": 1,
+    "opening_width_height": [
+      7,
+      4
+    ],
+    "center_y": 16.3,
+    "bottom_z": 2.8,
+    "routing": "Both signal wires share the rear seam opening; keep leads clear of battery, screws and lid joint",
+    "old_side_openings_removed": true,
+    "tie_slot_centers_xy": [
+      [
+        0.5,
+        11.3
+      ],
+      [
+        0.5,
+        21.3
+      ]
+    ],
+    "tie_slot_size_xy": [
+      3.2,
+      1.8
+    ],
+    "underside_tie_band_recess_depth": 1,
+    "minimum_floor_above_band_recess": 1.8,
+    "trial_bundle_diameter": 3,
+    "physical_wire_fit_verified": false
+  },
+  "print_plate": {
+    "file": "print-plate.stl",
+    "parts": [
+      "base",
+      "cover",
+      "hood",
+      "shield"
+    ],
+    "footprint_xy": [
+      91.2,
+      190
+    ],
+    "units": "mm",
+    "scale_percent": 100,
+    "orientation": "Base flat; cover roof-down; hood open-end-down; shield flat",
+    "gauges_and_insert_coupon_included": false
+  }
+}

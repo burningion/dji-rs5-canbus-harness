@@ -21,12 +21,25 @@ export function gamepadInput(pad) {
   const supported = !!pad && pad.connected && pad.mapping === 'standard' &&
     pad.axes?.length >= 2 && pad.buttons?.length >= 6 &&
     Number.isFinite(pad.axes[0]) && Number.isFinite(pad.axes[1]);
-  if (!supported) return { supported: false, neutral: false, held: false, stop: false, x: 0, y: 0 };
+  if (!supported) return { supported: false, neutral: false, held: false, stop: false, follow: false, x: 0, y: 0 };
   const held = !!pad.buttons[4].pressed; // L1 on a standard-mapped DualShock 4.
   const stick = shapeStick(pad.axes[0], pad.axes[1]);
-  return { supported: true, held, stop: !!pad.buttons[1].pressed,
+  return { supported: true, held, stop: !!pad.buttons[1].pressed, follow: !!pad.buttons[0].pressed,
     neutral: !held && stick.x === 0 && stick.y === 0,
     x: held ? stick.x : 0, y: held ? stick.y : 0 };
+}
+
+// X must be released while available before a press can toggle tracking.
+export class PressEdge {
+  constructor() { this.reset(); }
+  reset() { this.released = false; }
+  sample(pressed, available) {
+    if (!available) { this.reset(); return false; }
+    if (!pressed) { this.released = true; return false; }
+    const edge = this.released;
+    this.released = false;
+    return edge;
+  }
 }
 
 export function speeds(vector, maxSpeed, invertPan, invertTilt) {

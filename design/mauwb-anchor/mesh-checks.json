@@ -1,0 +1,221 @@
+{
+  "prototype": "E",
+  "physical_fit_verified": false,
+  "rf_tested": false,
+  "dimensions_mm": {
+    "body": [
+      87.7,
+      58.0,
+      26.7
+    ],
+    "overall": [
+      87.7,
+      58.0,
+      59.81
+    ]
+  },
+  "installed_radio_position": "Front face aligned to 72 mm PCB edge per user; rear face 68 mm inferred from approximate 4 mm depth; header envelope still provisional",
+  "packed_cell_envelope_mm": [
+    35.5,
+    29,
+    4.65
+  ],
+  "mount": {
+    "interface": "Two through screws into threaded camera cage holes; no printed threads or captive nut",
+    "centers_xy_mm": [
+      [
+        57,
+        3.06
+      ],
+      [
+        57,
+        29.54
+      ]
+    ],
+    "pitch_mm": 26.48,
+    "direction": "Y / camera left-right",
+    "clearance_diameter_mm": 6.8,
+    "head_pocket_diameter_mm": 10.2,
+    "seat_thickness_mm": 2.4,
+    "head_to_shield_clearance_mm": 0.67,
+    "checked_screw_envelope_diameter_head_diameter_head_height_mm": [
+      6.23,
+      9.38,
+      6.23
+    ],
+    "screw_dimensions_source": "User approximate measurements, 2026-09-30",
+    "physical_screw_fit_verified": false,
+    "floor_holes_and_closed_old_center_verified": true
+  },
+  "contacts_mm3": {
+    "collision": 0.0,
+    "case_collision": 9.663381206337363e-12,
+    "fastener_collision": 1.9648875119552638e-11,
+    "fastener_electronics_collision": 0.0,
+    "driver_collision": 9.909702688067531e-12,
+    "lid_lift_collision": 0.0,
+    "radio_sweep_collision": 0.0,
+    "wire_exit_collision": 0.0
+  },
+  "print_plate": {
+    "parts": [
+      "base",
+      "cover",
+      "shield",
+      "hood"
+    ],
+    "current_individual_meshes_match_verified": true,
+    "xy_footprint_mm": [
+      91.2,
+      190.0
+    ]
+  },
+  "wire_exit": {
+    "enabled": true,
+    "face": "Rear / -X / USB end, opposite antenna",
+    "width_height_mm": [
+      7,
+      4
+    ],
+    "center_y_mm": 16.3,
+    "old_side_openings_closed_verified": true,
+    "tie_band_recess_depth_mm": 1,
+    "trial_bundle_diameter_mm": 3
+  },
+  "closure": {
+    "screw_access": "From above; four blind insert pockets in base posts",
+    "screw_centers_xy_mm": [
+      [
+        8,
+        -6.2
+      ],
+      [
+        45,
+        -6.2
+      ],
+      [
+        22,
+        38
+      ],
+      [
+        45,
+        38
+      ]
+    ],
+    "screw_length_mm_including_head": 8,
+    "top_openings_and_closed_base_verified": true,
+    "driver_shaft_diameter_mm": 8,
+    "sampled_lid_lift_offsets_mm": [
+      0.2,
+      1.6,
+      10,
+      30,
+      60
+    ],
+    "physical_access_verified": false,
+    "lid_pcb_locating_pillars": 0,
+    "former_pillar_volumes_clear_verified": true,
+    "pcb_retention": "Incomplete: 5 mm-diameter supports have 3.1 mm-diameter, 1.2 mm-deep legacy locating sockets, not screw mounts. Lid does not retain PCB. Base and print plate require a PCB mounting revision.",
+    "continuous_radio_sweep_travel_mm": 60,
+    "pcb_mounting_complete": false
+  },
+  "collision_scope": "Simplified components, four printed parts, six M3 screws and two measured cage screw envelopes; top driver clearance, sampled lid removal, continuous 60 mm radio/header sweep and trial wire bundle at rear exit; heat-set knurls and cage excluded; PCB fasteners absent from design and checks, PCB retention incomplete",
+  "meshes": [
+    {
+      "file": "design/mauwb-anchor/base.stl",
+      "triangles": 5004,
+      "closed": true,
+      "components": 1,
+      "bounds_mm": [
+        87.7,
+        58.0,
+        23.7
+      ],
+      "volume_mm3": 23203.15
+    },
+    {
+      "file": "design/mauwb-anchor/cover.stl",
+      "triangles": 3604,
+      "closed": true,
+      "components": 1,
+      "bounds_mm": [
+        87.7,
+        58.0,
+        23.9
+      ],
+      "volume_mm3": 18360.283
+    },
+    {
+      "file": "design/mauwb-anchor/hood.stl",
+      "triangles": 672,
+      "closed": true,
+      "components": 1,
+      "bounds_mm": [
+        16.2,
+        58.0,
+        33.11
+      ],
+      "volume_mm3": 4908.559
+    },
+    {
+      "file": "design/mauwb-anchor/shield.stl",
+      "triangles": 216,
+      "closed": true,
+      "components": 1,
+      "bounds_mm": [
+        62.0,
+        43.48,
+        1.2
+      ],
+      "volume_mm3": 2545.335
+    },
+    {
+      "file": "design/mauwb-anchor/fit-gauge.stl",
+      "triangles": 832,
+      "closed": true,
+      "components": 1,
+      "bounds_mm": [
+        77.0,
+        38.6,
+        1.2
+      ],
+      "volume_mm3": 1646.781
+    },
+    {
+      "file": "design/mauwb-anchor/mount-gauge.stl",
+      "triangles": 1376,
+      "closed": true,
+      "components": 1,
+      "bounds_mm": [
+        87.7,
+        58.0,
+        9.3
+      ],
+      "volume_mm3": 6412.069
+    },
+    {
+      "file": "design/mauwb-anchor/insert-coupon.stl",
+      "triangles": 812,
+      "closed": true,
+      "components": 1,
+      "bounds_mm": [
+        65.0,
+        16.0,
+        7.0
+      ],
+      "volume_mm3": 6865.839
+    },
+    {
+      "file": "design/mauwb-anchor/print-plate.stl",
+      "triangles": 9496,
+      "closed": true,
+      "components": 4,
+      "bounds_mm": [
+        91.2,
+        190.0,
+        33.11
+      ],
+      "volume_mm3": 49017.303
+    }
+  ]
+}

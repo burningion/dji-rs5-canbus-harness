@@ -127,5 +127,38 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
                 if message['type'] == 'error': break
         self.assertFalse(self.app['controller'].bridge.enabled)
 
+    async def test_uwb_configuration_follow_loss_and_restart(self):
+        state = await self.connect()
+        self.assertFalse(state['uwb_ready'])
+        await self.ws.send_json(dict(type='uwb_config', ticket=state['ticket'], tag='1234',
+                                     direction=1, zero=0, max_speed=5))
+        state = await self.state(lambda s: s['uwb_ready'])
+        self.assertFalse(state['enabled'])
+        await self.input(state)
+        state = await self.state(lambda s: not s['release_required'])
+        await self.input(state, True, source='uwb')
+        state = await self.state(lambda s: s['enabled'] and s['device']['uwb']['following'])
+        for _ in range(5):
+            await self.input(state, True, source='uwb')
+            state = await self.state()
+        state = await self.state(lambda s: s['device']['pan_speed'] > 0)
+        self.assertLessEqual(state['device']['pan_speed'], 5)
+        self.assertEqual(state['device']['tilt_speed'], 0)
+        self.app['controller'].device.tag_visible = False
+        state = await self.state(lambda s: not s['enabled'] and not s['device']['armed'])
+        self.assertEqual(state['device']['pan_speed'], 0)
+        self.app['controller'].device.tag_visible = True
+        state = await self.state(lambda s: s['uwb_ready'])
+        await self.input(state, True, source='uwb')
+        state = await self.state()
+        self.assertFalse(state['enabled'])
+        await self.input(state)
+        state = await self.state(lambda s: not s['release_required'])
+        await self.input(state, True, source='uwb')
+        state = await self.state(lambda s: s['enabled'] and s['device']['uwb']['following'])
+        # The same browser lease also expires when following autonomously.
+        state = await self.state(lambda s: not s['enabled'] and not s['device']['armed'])
+        self.assertEqual(state['device']['pan_speed'], 0)
+
 
 if __name__ == '__main__': unittest.main()

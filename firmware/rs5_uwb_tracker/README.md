@@ -1,5 +1,7 @@
 # Makerfabs AoA → Feather → RS5 pan tracking
 
+**For the existing Control Desk UI and PS4 X toggle, use the [combined manual + UWB firmware](../rs5_manual_control/README.md) and [connection/setup guide](../../control_ui/UWB_SETUP.md).** This page describes the older standalone console prototype. Its motion envelope and console-disconnect behavior differ from the UI version.
+
 This sketch adds a first pan-tracking controller for the **Adafruit Feather ESP32-S3, 8 MB flash / no PSRAM**, the **original Makerfabs MaUWB STM32 AoA Development Kit**, and the existing Waveshare CAN interface. It is a prototype: compiled and tested on the host, but **not yet tested with the physical kit or RS5**. RS5 connector verification in the [main project](../../README.md#termination-and-first-electrical-checks) remains necessary.
 
 The default build is **preview only**: UWB input and proposed steering are displayed, and CAN stays listen-only. A separate, explicitly enabled build adds joint-angle queries and manually armed motion. Flash this sketch or the [CAN monitor](../README.md) separately; they are alternative Feather applications.
@@ -111,7 +113,7 @@ With CANH/CANL still disconnected from the RS5:
 3. Turn off the tag. The reported state should become stale and proposed speed return to zero. Bring it back and verify three new reports are required. Repeat with tag movement near the edge of the valid field.
 4. Confirm that `probe` and `arm +` are refused by this build. No command enables CAN transmission in preview firmware.
 
-If center alignment has a consistent offset, measure it over several seconds and set `zeroDegrees` in [TrackingCore.h](TrackingCore.h), then rebuild. That compensates mounting offset, not varying radio multipath or parallax. Validate the installed mount with the camera powered, since its body and nearby electronics can affect measurements.
+If center alignment has a consistent offset, measure it over several seconds and set `zeroDegrees` in [shared TrackingCore.h](../shared/TrackingCore.h), then rebuild. That compensates mounting offset, not varying radio multipath or parallax. Validate the installed mount with the camera powered, since its body and nearby electronics can affect measurements.
 
 ## Optional motion build, after electrical and preview checks
 
@@ -153,7 +155,7 @@ No autonomous startup or re-arming is implemented. Closing the USB monitor **doe
 
 ## Control behavior and limitations
 
-The controller calculates `atan2(Xcm, Ycm)` from the anchor's processed coordinates, applies a 0.25 s smoothing time constant and 3° deadband, then requests yaw speed proportional to the remaining angular error. Defaults cap speed at **15°/s**, acceleration at **45°/s²**, valid bearing at **±55°**, and distance at **0.75–20 m**. Arming starts speed from zero. Commands repeat at 20 Hz with roll/pitch speed zero. Tuning constants are in `TrackingCore.h`.
+The controller calculates `atan2(Xcm, Ycm)` from the anchor's processed coordinates, applies a 0.25 s smoothing time constant and 3° deadband, then requests yaw speed proportional to the remaining angular error. Defaults cap speed at **15°/s**, acceleration at **45°/s²**, valid bearing at **±55°**, and distance at **0.75–20 m**. Arming starts speed from zero. Commands repeat at 20 Hz with roll/pitch speed zero. Tuning constants are in `firmware/shared/TrackingCore.h`, shared with the UI firmware.
 
 Stale tag data (>300 ms), invalid selected-tag range/bearing, large angular jumps, malformed/partial UART reports, serial overflow, stale joint telemetry (>500 ms), loop stalls, and CAN faults disarm. Duplicate and recent out-of-order ranging sequences cannot refresh the fix. Unselected tags do not refresh it either. Disarming normally sends zero-speed and release packets. A CAN fault stops the driver and discards its queued commands; it may make sending a stop impossible.
 
