@@ -184,3 +184,19 @@ assert(!latestInput().held); // Availability alone never starts motion.
 ids['uwb-follow'].emit('click');
 assert.equal(latestInput().source,'uwb');
 console.log('Optional UWB: camera detection/loss leaves manual input available; only an explicit action starts follow.');
+
+ids['uwb-follow'].emit('click'); cameraTick(true,true);
+const configurations = () => socket.sent.filter(m=>m.type==='uwb_config');
+for (const maximum of [1, 15.5, 30]) {
+  ids['uwb-speed'].value=String(maximum);
+  ids['uwb-apply'].emit('click');
+  assert.equal(configurations().at(-1).max_speed,maximum);
+}
+for (const maximum of ['30.1', '0.9', 'NaN']) {
+  const count=configurations().length;
+  ids['uwb-speed'].value=maximum;
+  ids['uwb-apply'].emit('click');
+  assert.equal(configurations().length,count);
+}
+assert.match(html, /id="uwb-speed"[^>]*max="30"/);
+console.log('UWB settings: 1–30deg/s accepted; out-of-range and nonfinite speeds rejected.');

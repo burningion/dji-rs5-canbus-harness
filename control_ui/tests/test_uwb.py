@@ -116,8 +116,12 @@ class UwbTests(unittest.TestCase):
         self.bridge.configure_uwb(config, True)
         self.assertEqual(self.commands[-1], 'uwb 42 100 43981 -1 25 50')
         self.assertFalse(self.bridge.enabled)
+        for maximum in (1, 15, 15.5, 30):
+            self.bridge.configure_uwb(config | dict(max_speed=maximum), True)
+            self.assertEqual(self.commands[-1], f'uwb 42 100 43981 -1 25 {round(maximum*10)}')
         for changes in [dict(tag='12345'), dict(tag='12XZ'), dict(direction=True),
-                        dict(zero=float('nan')), dict(max_speed=16), dict(zero=31)]:
+                        dict(zero=float('nan')), dict(max_speed=30.1), dict(max_speed=.9),
+                        dict(max_speed=float('nan')), dict(zero=31)]:
             with self.assertRaises(ControlError): self.bridge.configure_uwb(config | changes, True)
         with self.assertRaises(ControlError): self.bridge.configure_uwb(config, False)
         self.start()

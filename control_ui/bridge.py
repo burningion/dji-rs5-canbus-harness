@@ -113,8 +113,8 @@ class Bridge:
         if (not isinstance(tag, str) or len(tag) != 4 or any(c not in "0123456789abcdefABCDEF" for c in tag)
                 or type(direction) is not int or direction not in (-1, 1)
                 or type(zero) not in (int, float) or not math.isfinite(zero) or not -30 <= zero <= 30
-                or type(maximum) not in (int, float) or not math.isfinite(maximum) or not 1 <= maximum <= 15):
-            raise ControlError("Use a four-digit hex tag, direction ±1, center ±30°, and speed 1–15°/s.")
+                or type(maximum) not in (int, float) or not math.isfinite(maximum) or not 1 <= maximum <= 30):
+            raise ControlError("Use a four-digit hex tag, direction ±1, center ±30°, and speed 1–30°/s.")
         d = self.device
         self.release_required = True
         self.reason = "UWB settings sent; waiting for three fresh tag reports."

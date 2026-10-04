@@ -114,6 +114,37 @@ In Arduino IDE, install **esp32 by Espressif Systems 3.3.11**, then open the cam
 
 If a Feather has no upload port, hold **BOOT**, tap **RESET**, release **BOOT**, then select its new port. For CLI upload from the ROM bootloader, add `--board-options UploadMode=default` to the upload command if the TinyUSB reset step fails. Press RESET after uploading from ROM mode, then rediscover the application port. [Adafruit's native-USB upload/recovery guide](https://learn.adafruit.com/adafruit-esp32-s3-feather/using-with-arduino-ide).
 
+## When and how to control the RS5
+
+**Mouse and PS4 control remain built into Control Desk.** The current control path is `mouse / PS4 → Mac browser → USB → RS5-body ESP32 master → Waveshare → Mill-Max → RS5`. The camera ESP32 adds optional UWB measurements; manual control works with it powered off.
+
+1. Power the RS5 and connect the **body ESP32** to the Mac by USB. Run `python3 control_ui/server.py`, open **http://127.0.0.1:8765**, select its port and click **Connect**. Wait for **LIVE** RS5 angles. Keep the browser page visible and focused while controlling.
+2. For PS4 control, connect the DualShock 4 to the **Mac** with a USB data cable, or hold **SHARE + PS** until its light flashes and select **DUALSHOCK 4 Wireless Controller** in macOS Bluetooth settings. Click the browser page, press a controller button, then release L1 and X before starting. [Detailed controller setup](control_ui/README.md#pair-the-ps4-controller).
+3. Use the controls below. Detection, connection and power-up never start movement; each start needs a fresh operator action.
+
+| Action | When available | How to use it |
+| --- | --- | --- |
+| Mouse pan/tilt | LIVE RS5 angles; UWB is optional | Hold/drag the pad or hold a direction button; release to stop |
+| PS4 pan/tilt | LIVE RS5 angles and controller detected | Hold **L1 + left stick**; release L1 to stop |
+| UWB pan follow | Applied tag settings and **TAG LIVE** | Press **X** or **Start UWB follow**; press again to stop |
+| Stop | During manual control or follow | **Circle**, **Space**, or **Escape** |
+| Change from follow to manual | During follow | L1 or mouse cancels follow; release, then hold again to steer |
+| Restart after a lost tag or connection | Connection restored; TAG LIVE again for follow | Release controls, then make a fresh manual gesture or X/button press; no automatic restart |
+
+The manual speed slider is **1–60°/s**, initially **10°/s**. UWB follow has its own **1–30°/s** limit, initially **5°/s**, and controls pan only. For UWB, power the paired camera node and tag, enter the detected short tag ID, apply direction/center/speed settings, and wait for TAG LIVE. **TAG DETECTED alone does not enable follow.** Settings must be reapplied after a body reset or page reload. Start with a small tag offset and verify steering toward it. [UWB setup, calibration and controls](control_ui/UWB_SETUP.md#controls-and-first-follow-test).
+
+To use the expanded 30°/s follow range, rebuild/reflash the **body ESP32**, restart the Control Desk server and reload the page. Older body firmware rejects settings above 15°/s; the camera relay needs no change. Preserve the pair's existing configuration when rebuilding. The former ceiling was a conservative bench-test setting; the starting value remains 5°/s. [Speed setting and update details](control_ui/UWB_SETUP.md#tracking-behavior).
+
+The current firmware requires the active USB/Control Desk session for both manual control and follow. Closing/hiding the page, losing focus, or losing controller/input/USB communication stops motion; returning does not resume it automatically.
+
+### Future direct PS4 pairing
+
+**Direct PS4-to-ESP32 Bluetooth control is not implemented.** The present Feather **ESP32-S3 cannot pair natively with a DualShock 4**: the controller uses Bluetooth Classic (BR/EDR), while the S3 supports Bluetooth LE only. This needs different/additional radio hardware, not just a pairing setting. [Bluepad32 compatibility explanation](https://bluepad32.readthedocs.io/en/latest/FAQ/#why-cant-i-connect-my-dualshock-or-switch-controller-to-my-esp32-s3-or-esp32-c3), [Espressif S3 Bluetooth support](https://docs.espressif.com/projects/esp-idf/en/stable/esp32s3/api-reference/bluetooth/index.html).
+
+For a future extension that keeps the working S3/CAN master, add an **original ESP32 with Bluetooth Classic**, running Bluepad32 as a gamepad receiver, and pass its input to the master over a short local UART connection. Another option is to replace the body board with an original ESP32 and port the firmware/pin mapping. The existing S3 binaries cannot be flashed onto that replacement. These are proposed designs, not existing firmware features.
+
+Either approach needs firmware support for controller pairing and input, local tag/settings management, and choosing between UI and direct-controller input. The master should retain L1-to-move, X-to-toggle-follow, Circle-to-stop, input timeouts and explicit restart after disconnection. Computer-free operation also needs a direct-controller input lease in place of today's required USB/browser lease; simply removing that requirement would not implement controller-loss handling. The camera remains an optional UWB peripheral. [More on future direct control](control_ui/README.md#future-direct-ps4-control).
+
 ## Changes from RS2
 
 - **Use the one electrical RSA/NATO port.** The RS5 manual identifies it as item 17, next to the joystick-mode switch (item 25). The other side's NATO rail, item 12 near the power button, has no charging or communication. Identify the exposed contacts rather than relying on an ambiguous left/right description.

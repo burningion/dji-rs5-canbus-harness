@@ -23,9 +23,9 @@ static void tick(unsigned ms=50) {
   if (following) cmd(session("follow")+" "+std::to_string(++heartbeats));
   loop();
 }
-static void receive(uint32_t boot=77,uint32_t age=0,bool valid=true,bool wrongPeer=false) {
+static void receive(uint32_t boot=77,uint32_t age=0,bool valid=true,bool wrongPeer=false,int x=200) {
   uwb::Measurement m; m.tag=0x1234; m.sequence=++rangeSequence;
-  m.xCm=200; m.yCm=400; m.distanceCm=450;
+  m.xCm=x; m.yCm=400; m.distanceCm=static_cast<int32_t>(hypot(x,400));
   uint8_t p[wireless::ResponseSize];
   assert(wireless::response(radioSent.data(),radioSent.size(),boot,m,age,valid,p));
   uint8_t mac[6]={}; if (wrongPeer) mac[0]=1;
@@ -42,8 +42,8 @@ static void reset() {
   espnowLink::waiting=espnowLink::overflow=false; espnowLink::ready=true; radioSendResult=ESP_OK;
   heartbeats=rangeSequence=0; cmd(session("uwb")+" 4660 1 0 50");
 }
-static void acquire() {
-  for (int i=0;i<4;++i) { tick(); receive(); tick(5); }
+static void acquire(int x=200) {
+  for (int i=0;i<4;++i) { tick(); receive(77,0,true,false,x); tick(5); }
   assert(tracker.fresh(fakeNow));
 }
 static void start() {
@@ -51,6 +51,14 @@ static void start() {
   assert(following && motion.active() && outputPan>0);
 }
 int main() {
+  reset(); cmd(session("uwb")+" 4660 1 0 300"); acquire(400); cmd(session("track"));
+  for (int i=0;i<20;++i) {
+    tick(); receive(77,0,true,false,400); tick(5);
+    assert(following && motion.active() && outputPan>0 && outputPan<=300 && outputTilt==0);
+  }
+  assert(outputPan==300);
+  for (int i=0;i<7;++i) tick(); // Radio loss also stops at the new maximum.
+  assert(!following && !motion.active() && outputPan==0);
   // The body is usable on its own, including before radio pairing/setup.
   for (const bool radioInitialized : {false,true}) {
     reset(); espnowLink::ready=radioInitialized;

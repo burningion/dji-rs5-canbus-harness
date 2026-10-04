@@ -238,7 +238,7 @@ static void handleCommand(char *line, uint32_t now) {
   if (count == 7 && !strcmp(args[0], "uwb") && unsignedValue(args[3], tag) && tag <= 65535 &&
       speedValue(args[4], sign) && (sign == 1 || sign == -1) &&
       speedValue(args[5], zero) && abs(zero) <= 300 &&
-      speedValue(args[6], maximum) && maximum >= 10 && maximum <= 150) {
+      speedValue(args[6], maximum) && maximum >= 10 && maximum <= 300) {
     stopMotion("uwb_configured");
     uwbDirection = sign; uwbZero = zero; uwbMaxSpeed = maximum;
     tracker.configure(zero/10.0f, maximum/10.0f); tracker.select(static_cast<uint16_t>(tag));

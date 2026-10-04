@@ -40,8 +40,8 @@ static void reset() {
   cmd(session("uwb")+" 4660 1 0 50");
   assert(!motion.active() && fakeFrames.empty());
 }
-static void acquire() {
-  for(int i=1;i<=3;++i) { report(i); tick(); }
+static void acquire(int x=200) {
+  for(int i=1;i<=3;++i) { report(i,0x1234,x); tick(); }
   assert(tracker.fresh(fakeNow));
 }
 static void start() {
@@ -94,15 +94,22 @@ int main() {
   Serial1.incoming="JS0002xx"; tick();
   assert(motion.active() && outputPan==600 && outputTilt==-600); // Absent/bad UWB doesn't break manual.
 
-  reset(); cmd(session("uwb")+" 4660 -1 0 150"); acquire(); cmd(session("track"));
-  for(int i=4;i<16;++i) {
-    report(i); cmd(session("follow")+" "+std::to_string(i)); tick();
-    assert(outputPan<0 && outputPan>=-150 && outputTilt==0);
+  for (const int sign : {-1,1}) {
+    reset(); cmd(session("uwb")+" 4660 "+std::to_string(sign)+" 0 300");
+    assert(uwbMaxSpeed==300);
+    acquire(400); cmd(session("track"));
+    for(int i=4;i<24;++i) {
+      const int previous=outputPan;
+      report(i,0x1234,400); cmd(session("follow")+" "+std::to_string(i)); tick();
+      assert(motion.active() && outputPan*sign>0 && outputPan*sign<=300 && outputTilt==0);
+      assert(abs(outputPan-previous)<=23); // Existing 45deg/s^2 ramp, in tenths.
+    }
+    assert(outputPan==sign*300); // The configurable tracker really reaches 30deg/s.
+    cmd(session("uwb")+" 4660 1 0 301");
+    assert(!motion.active() && !following && outputPan==0 && uwbMaxSpeed==300);
+    assert(!strcmp(motion.reason(),"invalid_command")); // 30.1deg/s is rejected.
   }
-  assert(outputPan==-150);
-  cmd("stop"); cmd(session("uwb")+" 4660 1 0 151");
-  assert(!motion.active()); // Firmware rejects tracking speeds above 15deg/s.
   status(fakeNow); while(console.size()) drainConsole();
   assert(Serial.written.find("\"uwb\":{")!=std::string::npos);
-  puts("Combined firmware UART, follow leases, stops and manual fallback passed.");
+  puts("Combined firmware UART, 30deg/s follow in both directions, limits, leases and manual fallback passed.");
 }

@@ -188,8 +188,8 @@ ui['uwb-apply'].addEventListener('click', () => {
   const zero = Number(ui['uwb-zero'].value), maximum = Number(ui['uwb-speed'].value);
   if (!/^[0-9a-f]{4}$/i.test(ui['uwb-tag'].value) || ui['uwb-zero'].value === '' ||
       ui['uwb-speed'].value === '' || !Number.isFinite(zero) || Math.abs(zero) > 30 ||
-      !Number.isFinite(maximum) || maximum < 1 || maximum > 15) {
-    warning = 'Use a four-digit hex tag, center offset −30° to 30°, and follow limit 1–15°/s.';
+      !Number.isFinite(maximum) || maximum < 1 || maximum > 30) {
+    warning = 'Use a four-digit hex tag, center offset −30° to 30°, and follow limit 1–30°/s.';
     render(); return;
   }
   // Match the device's tenths-of-a-degree representation after acknowledgement.

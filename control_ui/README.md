@@ -22,7 +22,7 @@ Open **http://127.0.0.1:8765** in Chrome or Edge. The app binds only to the loca
 4. Manual control has **no Enable button, Stop button, or input-mode selector**. Both devices are available together. The first held control owns the gesture; release both before switching to avoid a jump to an already-held second input.
 5. **Space**, **Escape**, or PS4 **Circle** also stops. After a stop, focus loss, disconnect, or fault, release the controls and hold again. Connecting, recovering a connection, or leaving a stick displaced never starts movement by itself.
 
-For UWB, configure the tag in the **UWB FOLLOW** panel and wait for **TAG LIVE**, then press **X** or click **Start UWB follow**. X toggles; Circle/Space/Escape stops. L1 or mouse cancels follow; release and hold again for manual control. Tag loss disarms and requires a fresh X press after reacquisition. Follow defaults to 5°/s with a separate 15°/s cap. The [setup guide](UWB_SETUP.md) includes the camera-mounted anchor wiring and direction calibration.
+For UWB, configure the tag in the **UWB FOLLOW** panel and wait for **TAG LIVE**, then press **X** or click **Start UWB follow**. X toggles; Circle/Space/Escape stops. L1 or mouse cancels follow; release and hold again for manual control. Tag loss disarms and requires a fresh X press after reacquisition. Follow defaults to 5°/s with a separate 30°/s cap. The [setup guide](UWB_SETUP.md) includes the camera-mounted anchor wiring and direction calibration.
 
 Keep the balanced gimbal supported, unlocked, and clear of cables/obstructions, with its physical power control accessible.
 
@@ -39,6 +39,14 @@ Use a USB data cable, or hold **SHARE + PS** until the controller light flashes,
 Only the browser's **standard** gamepad mapping is accepted. An unknown mapping disables controller operation instead of guessing which button is L1. Chrome/Edge are the suggested first browsers to try. If the controller is not shown, confirm macOS pairing/data-cable operation and press a button while this page has focus. A USB cable is the simplest way to isolate a Bluetooth issue.
 
 Sources: [Sony's DualShock 4 pairing instructions](https://www.playstation.com/en-us/support/hardware/ps4-pair-dualshock-4-wireless-with-pc-or-mac/), [MDN Gamepad API and standard mapping](https://developer.mozilla.org/en-US/docs/Web/API/Gamepad_API/Using_the_Gamepad_API). The ESP32-S3 supports Bluetooth LE but not Bluetooth Classic ([Espressif](https://docs.espressif.com/projects/esp-idf/en/v5.2/esp32s3/api-guides/bluetooth.html)); this implementation routes the controller through the Mac.
+
+## Future direct PS4 control
+
+**Not implemented:** the current PS4 connection goes through the Mac/browser and USB. DualShock 4 requires Bluetooth Classic, which our Feather ESP32-S3 lacks. Bluepad32 supports it on the **original ESP32**; installing the library on an S3 does not add that radio capability. [Bluepad32 controller/chip compatibility](https://bluepad32.readthedocs.io/en/latest/FAQ/#why-cant-i-connect-my-dualshock-or-switch-controller-to-my-esp32-s3-or-esp32-c3).
+
+The proposed extension is a small original-ESP32 gamepad receiver connected by UART to the existing body master. It would supply live button/stick input while the master continues to own CAN and optional UWB tracking. Replacing the body S3 with an original ESP32 is also possible in principle, but requires porting the firmware and checking pin assignments, USB behavior and simultaneous Bluetooth/ESP-NOW operation.
+
+Computer-free control needs additional firmware: explicit controller pairing, input-source ownership when a UI is also connected, a controller-report timeout, and a way to select/apply the UWB tag and settings without the browser. Preserve L1-to-move/release-to-stop, Circle stop, X follow toggle, fresh tag/telemetry requirements and no automatic restart. Use fresh controller reports to authorize continued operation instead of requiring the current browser/USB lease. A connected Bluetooth state alone is not proof of fresh input. The present builds still require Control Desk; these notes describe future work.
 
 ## Travel and stopping
 
