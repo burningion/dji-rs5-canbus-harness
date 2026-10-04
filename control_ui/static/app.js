@@ -112,7 +112,8 @@ function render() {
   const message = !state.ready ? connectionHint(state)
     : router.blocked && (mouse.held || controller.held) ? 'Release the mouse and L1, then hold your chosen control.'
     : warning || (following ? 'X or Circle stops follow. L1 or mouse cancels for manual control.'
-      : intent.held ? 'Release to stop.' : 'Drag the mouse pad, hold L1 + stick, or press X for UWB.');
+      : intent.held ? 'Release to stop.' : state.uwb_ready ? 'Drag the mouse pad, hold L1 + stick, or press X for UWB.'
+      : 'Drag the mouse pad or hold L1 + stick. UWB follow is optional.');
   ui['status-message'].textContent = reasons[message] || message;
   ui['status-message'].classList.toggle('error-text', !!warning || d?.can_ready === false);
   ui.pad.classList.toggle('live', moving);
@@ -123,20 +124,27 @@ function render() {
     : intent.source === 'gamepad' ? 'PS4 ACTIVE' : 'AUTO INPUT';
   ui['input-status'].textContent = following ? '● Following tag · X to stop' : intent.source === 'mouse' ? '● Mouse held' : intent.source === 'gamepad'
     ? '● L1 held · stick active' : '● Mouse and controller available';
-  ui['controller-status'].textContent = controller.supported ? 'PS4 connected · L1 + stick · X: UWB follow'
+  ui['controller-status'].textContent = controller.supported ? (state.uwb_ready
+    ? 'PS4 connected · L1 + stick · X: UWB follow' : 'PS4 connected · L1 + stick')
     : padId ? 'Controller mapping unsupported · try Chrome' : 'PS4: connect to your Mac, then press a button';
   ui['controller-status'].title = padId;
   ui['input-note'].textContent = 'Drag the pad or hold L1 + left stick. Release to stop.';
   const u = d?.uwb;
   const tagFresh = available() && !!state.uwb_ready;
-  ui['uwb-badge'].textContent = following && state.enabled ? 'FOLLOWING' : tagFresh ? 'TAG LIVE' : 'WAITING';
+  const tagDetected = fresh && !!u?.observed;
+  ui['uwb-badge'].textContent = following && state.enabled ? 'FOLLOWING' : tagFresh ? 'TAG LIVE'
+    : tagDetected ? 'TAG DETECTED' : fresh && u ? 'NO UWB' : 'WAITING';
   ui['uwb-badge'].classList.toggle('live', tagFresh);
   ui['uwb-bearing'].textContent = tagFresh ? `${u.bearing.toFixed(1)}°` : '—';
   ui['uwb-range'].textContent = tagFresh ? `${u.range_m.toFixed(2)} m` : '—';
-  ui['uwb-observed'].textContent = u?.observed && fresh
+  ui['uwb-observed'].textContent = tagDetected
     ? `Receiving tag ${u.observed_tag.toString(16).toUpperCase().padStart(4, '0')}` : 'No recent anchor report';
-  ui['uwb-status'].textContent = !state.connected ? 'Connect the Feather to see your anchor.'
+  ui['uwb-status'].textContent = !state.connected ? 'Connect the RS5 controller. UWB follow is optional.'
     : !u ? 'Update the Feather with the combined manual + UWB firmware.'
+    : !state.ready ? 'Waiting for the RS5 connection. UWB follow is optional.'
+    : !tagDetected ? (u.transport === 'esp-now' && !u.radio_ready
+      ? 'Set up the camera connection to add UWB follow. Manual control is available.'
+      : 'No UWB tag detected. Power the camera anchor and tag to add follow. Manual control is available.')
     : !uwbSettingsMatch() ? 'Enter the tag ID and apply settings. Follow starts only when you press X.'
     : !tagFresh ? `Waiting for a fresh tag: ${u.reason}.`
     : `Tag ${u.tag.toString(16).toUpperCase().padStart(4, '0')} ready · pan only · ${u.max_speed}°/s limit.`;

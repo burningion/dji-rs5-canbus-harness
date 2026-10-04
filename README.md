@@ -2,9 +2,117 @@
 
 Build a removable spring-contact adapter on the RS5's electrical RSA/NATO port, with the battery grip attached. The design uses the **prewired Mill-Max 889-22-008-70-501010**, held between two printed parts. The RS5 adaptation retains this part; no different contact block is indicated by the compatibility evidence below. Use an ESP32 with a 3.3 V CAN transceiver, powered from USB for the first version.
 
-**Status: RS5 prototype, not physically validated.** Mill-Max dimensions come from its family drawing. The nominal mounting geometry is inherited from the RS2 community design, supported by DJI's cross-model Focus Wheel compatibility. Pinout, voltage, detect resistor and CAN settings below come from DJI R SDK v2.5, whose connector illustration is for RS2. DJI now lists RS5 SDK support but still links that older download. Applying its connector details to RS5 is an inference, not a separately published RS5 pinout. Confirm physical fit, ground/pad orientation and communication on your unit before use.
+**Status: the Mill-Max interface and wired UWB tracking work on the user's RS5.** Confirmed by the user on 2026-10-04: the direct `UWB anchor → ESP32 → Waveshare → Mill-Max pin harness → RS5` connection successfully tracked the tag. The new two-ESP32 wireless path is implemented and software-tested; pairing and following over that radio link still need a hardware check. Camera-enclosure fit, combined-battery operation and charging remain separate, unverified work.
+
+Mill-Max dimensions come from its family drawing; nominal mounting geometry comes from the RS2 community design. The reference pinout, voltage and detect-resistor details below come from DJI R SDK v2.5's RS2 illustration. The working RS5 setup establishes this build's interface, but is not a measurement of accessory VCC or every mechanical tolerance. Keep the proven harness wiring and termination when adding wireless.
 
 Geometry validation: base and cover each export as one closed solid; the combined print plate contains two closed solids. OpenSCAD's solid intersection between the assembled holder and the nominal Mill-Max connector envelope is empty (no solid interference). See [mesh checks](design/mesh-checks.json). This check covers the nominal connector geometry, not the RS5 or manufacturing tolerances.
+
+## UWB through the camera and RS5 ESP32s
+
+The intended wireless path is implemented, with the **RS5-body ESP32 as master** and the camera ESP32 as an optional UWB peripheral:
+
+```text
+Subject tag --UWB--> camera-mounted STM32 anchor
+  --short UART TXD1/GND--> camera ESP32 (rs5_anchor_radio)
+  --paired ESP-NOW radio--> RS5-body ESP32 (rs5_wireless_control)
+  --GPIO5 TX / GPIO6 RX--> Waveshare SN65HVD230
+  --CAN-H / CAN-L--> Mill-Max harness --> RS5
+```
+
+The camera ESP32 reads the anchor on **RX/GPIO38 at 115200 baud** and relays measurements. The body ESP32 runs the existing tracking controller and sends DJI commands over **1 Mbit/s CAN**. ESP-NOW needs no router. Move the anchor's UART/ground connection to the camera ESP32; keep the working body-side Waveshare/Mill-Max circuit. The camera and body have separate power, with no UART, power or ground cable crossing the moving axes. See [wireless wiring and power](firmware/WIRELESS_UWB.md).
+
+The master polls the paired camera every 50 ms and owns tag selection, tracking, motion limits and all CAN commands. Manual mouse/PS4 control works with the camera off, absent, or not yet paired. After the one-time pairing below, powering the camera and tag automatically makes their reports available to the master; no body reflash or mode change is needed on each connection. Control Desk shows **NO UWB**, **TAG DETECTED**, then **TAG LIVE** once the selected tag has a valid fix. Detection offers follow but never starts it or takes over manual control. Losing UWB stops active follow; manual control remains available, and recovery requires a fresh follow action.
+
+**The body still uses USB to the existing Control Desk.** It boots disarmed; apply your tag settings, wait for TAG LIVE, then press PS4 **X** or **Start UWB follow**. This firmware does not start autonomous follow when powered on. The camera ESP32 can run without a USB host. The Makerfabs anchor and tag keep their existing factory firmware and binding.
+
+## Flash both ESP32s
+
+Both targets are **Adafruit Feather ESP32-S3, 8 MB flash / No PSRAM**, using **esp32 by Espressif Systems 3.3.11**. Keep the full repository layout because the sketches include shared files.
+
+| Physical board | Sketch to flash |
+| --- | --- |
+| On the moving camera, beside the UWB anchor | [rs5_anchor_radio.ino](firmware/rs5_anchor_radio/rs5_anchor_radio.ino) |
+| On the RS5 body: master, connected to Waveshare CAN | [rs5_wireless_control.ino](firmware/rs5_wireless_control/rs5_wireless_control.ino) |
+| Original single-ESP32 wired setup, if restoring it | [rs5_manual_control.ino](firmware/rs5_manual_control/rs5_manual_control.ino), on the body ESP32 |
+
+**First-time pairing takes two uploads per ESP32:** first discover their MAC addresses, then generate the shared pairing file and rebuild/upload both. Without `firmware/shared/WirelessConfig.h`, both wireless sketches run for MAC discovery with `radio_ready=0`; UWB radio operation is disabled. If that file already exists for these exact two boards, keep it and go directly to the configured builds/uploads.
+
+### 1. Prepare the tools and identify the ports
+
+Run commands from the repository root. With [Arduino CLI installed](https://arduino.github.io/arduino-cli/latest/installation/), install the tested core if needed:
+
+```sh
+arduino-cli core update-index --additional-urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
+arduino-cli core install esp32:esp32@3.3.11 --additional-urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
+arduino-cli board list
+```
+
+Connect each Feather through its own USB-C connector, one at a time, and label it **camera** or **body**. Replace `CAMERA_FEATHER_PORT` and `BODY_FEATHER_PORT` below with their actual ports (for example `/dev/cu.usbmodem...` on macOS). Do not select the Makerfabs anchor's port. Close Control Desk's serial connection and any serial monitor before uploading. For flashing, leave the RS5 powered off; neither sketch automatically starts motion.
+
+### 2. Build, flash and read each MAC address
+
+**Camera ESP32:**
+
+```sh
+arduino-cli compile \
+  --fqbn esp32:esp32:adafruit_feather_esp32s3_nopsram --warnings all --clean \
+  --build-path "$PWD/tmp/build-rs5_anchor_radio" \
+  --output-dir "$PWD/tmp/rs5_anchor_radio" firmware/rs5_anchor_radio
+arduino-cli upload \
+  --fqbn esp32:esp32:adafruit_feather_esp32s3_nopsram \
+  --port CAMERA_FEATHER_PORT --input-dir "$PWD/tmp/rs5_anchor_radio" \
+  firmware/rs5_anchor_radio
+arduino-cli monitor --port CAMERA_FEATHER_PORT --config baudrate=115200
+```
+
+Record the `camera mac=AA:BB:CC:DD:EE:FF` address printed once per second. Close the monitor with Ctrl+C.
+
+**RS5-body ESP32:**
+
+```sh
+arduino-cli compile \
+  --fqbn esp32:esp32:adafruit_feather_esp32s3_nopsram --warnings all --clean \
+  --build-path "$PWD/tmp/build-rs5_wireless_control" \
+  --output-dir "$PWD/tmp/rs5_wireless_control" firmware/rs5_wireless_control
+arduino-cli upload \
+  --fqbn esp32:esp32:adafruit_feather_esp32s3_nopsram \
+  --port BODY_FEATHER_PORT --input-dir "$PWD/tmp/rs5_wireless_control" \
+  firmware/rs5_wireless_control
+arduino-cli monitor --port BODY_FEATHER_PORT --config baudrate=115200
+```
+
+Type `help` and press Enter. Record the `body mac=AA:BB:CC:DD:EE:FF` address, then close the monitor. These are the **Wi-Fi STA MAC addresses**, not UWB tag IDs or Bluetooth addresses. USB ports can change after flashing; run `arduino-cli board list` again and update the port if needed.
+
+### 3. Pair, then rebuild and flash both again
+
+Replace the MAC placeholders with the two recorded addresses:
+
+```sh
+python3 tools/configure_wireless_pair.py --camera CAMERA_STA_MAC --body BODY_STA_MAC
+```
+
+This creates ignored `firmware/shared/WirelessConfig.h` with the peer addresses, random encryption keys and channel 6. It refuses to overwrite an existing pairing. Keep this file for subsequent updates to the same pair; only move it aside deliberately when replacing/re-pairing boards. Both builds must use the same file.
+
+**Repeat both compile/upload blocks from step 2 after generating the file.** The `--clean` builds ensure the new pairing configuration is included. Uploading the earlier discovery binaries again will leave the radios disabled.
+
+### 4. Verify the link and enable follow
+
+With both nodes powered, check camera serial output for `radio_ready=1`. In the body's JSON status, the `uwb` object should contain `"transport":"esp-now"` and `"radio_ready":true`. These flags confirm local radio initialization; live tag reports on the body prove measurements cross the wireless link.
+
+Close the serial monitors, power the RS5, and start the existing UI:
+
+```sh
+python3 control_ui/server.py
+```
+
+Open **http://127.0.0.1:8765**, connect to the **body** ESP32, wait for LIVE RS5 angles, apply your tag ID/direction/offset and **5°/s** follow speed, then wait for **TAG LIVE**. Press PS4 **X** or **Start UWB follow**. Retain the settings that worked in the wired test; confirm the camera turns toward the tag. Test camera power loss/tag loss: follow should stop and require a fresh enable action after reports return. [Control Desk setup and controls](control_ui/UWB_SETUP.md#controls-and-first-follow-test).
+
+### Arduino IDE and upload recovery
+
+In Arduino IDE, install **esp32 by Espressif Systems 3.3.11**, then open the camera or body `.ino` from the table. Select **Adafruit Feather ESP32-S3 No PSRAM** and its USB port. Keep **8MB**, **QIO 80MHz**, **TinyUF2 8MB (2MB APP/3.7MB FATFS)**, **USB-OTG (TinyUSB)**, **USB CDC On Boot: Enabled**, and **Upload Mode: USB-OTG CDC (TinyUSB)**. Upload each discovery sketch and use Serial Monitor at **115200**, with a newline for the body's `help` command. Generate the pairing file with the Python command above, then compile/upload both again; the CLI `--clean` commands above provide a clean rebuild after adding the file.
+
+If a Feather has no upload port, hold **BOOT**, tap **RESET**, release **BOOT**, then select its new port. For CLI upload from the ROM bootloader, add `--board-options UploadMode=default` to the upload command if the TinyUSB reset step fails. Press RESET after uploading from ROM mode, then rediscover the application port. [Adafruit's native-USB upload/recovery guide](https://learn.adafruit.com/adafruit-esp32-s3-feather/using-with-arduino-ide).
 
 ## Changes from RS2
 
@@ -15,6 +123,8 @@ Geometry validation: base and cover each export as one closed solid; the combine
 - **The electrical port is occupied by this adapter.** The RS5 Electronic Briefcase Handle cannot use that same mounting point simultaneously. DJI's special warning about fitting that new handle to older gimbals does not change the legacy Focus Wheel compatibility evidence.
 
 ## Files
+
+- [Wireless camera-to-body electronics](firmware/WIRELESS_UWB.md): camera-side STM32 anchor plus its own Feather ESP32-S3 share one 3.7 V / 500 mAh battery; paired ESP-NOW sends measurements to the body-side Feather/CAN controller. Includes firmware, Feather USB charging, a direct positive-lead battery switch and pairing instructions. Revision G models the stacked Feather/STM32 mounts and Feather charging port; charging with the anchor load and other hardware behavior remain unverified.
 
 - [Print both parts](design/rs5-millmax-print-plate.stl): base and rear cover, already oriented for printing at 100% scale in millimeters.
 - [Base STL](design/rs5-millmax-base.stl) and [rear cover STL](design/rs5-millmax-cover.stl), if printing separately.
@@ -30,13 +140,13 @@ Geometry validation: base and cover each export as one closed solid; the combine
 - [RS5 Control Desk](control_ui/README.md): local mouse / PS4 controller UI with **X-to-toggle UWB follow** ([connection layout and setup](control_ui/UWB_SETUP.md)) for analog pan and tilt, 1–60°/s speed selection with no added travel limits, live angles, and automatic hold-to-move with release-to-stop; companion [manual-control firmware](firmware/rs5_manual_control/README.md).
 - [Standalone Makerfabs UWB camera-tracking prototype](firmware/rs5_uwb_tracker/README.md): camera-mounted AoA anchor, subject-carried tag, UART on Feather RX/GPIO38; preview by default, optional manually armed RS5 pan control. Compiled and host-tested; physical operation remains unverified.
 - [Makerfabs tag pocket enclosure](design/mauwb-tag/README.md): parameterized OpenSCAD case, fit gauge and print files for a removable 500 mAh battery; external charging, no soldered headers. Vendor PCB dimensions with provisional component heights.
-- [Camera-top UWB anchor enclosure](design/mauwb-anchor/README.md): removable measured 500 mAh battery, upright dual-antenna hood, a rear wire exit opposite the antenna, two cage mounting holes spaced 26.48 mm across the camera, and a lid fastened from above for access while mounted. The lid has no PCB locating pillars, allowing the antenna to cover the front mounting holes. Includes a four-part print plate, cage fit gauge and recesses for the measured cage screws. **PCB retention is incomplete: the base supports need screw mounts before assembly.** Physical fit and header clearances remain unverified; the antenna position follows the user-reported flush PCB edge.
+- [Camera-top UWB anchor enclosure](design/mauwb-anchor/README.md): revision G mounts the Feather below the STM32/antenna, adds Feather USB-C access, and preserves the exact 13.5 × 8.4 mm rocker opening and 26.48 mm cage-hole spacing. Both boards have rear M2 screw mounts; Feather front pins and STM32 front-edge keepers provide support. Body 87.7 × 58 × 41.1 mm, overall height 72.81 mm. The rocker switches battery positive directly. **Physical fit/RF and charging with the anchor load are unverified.**
 - [RS5 port illustrations](references/dji-rs5-ports.png) and [overview](references/dji-rs5-overview.png), from pages 17 and 6 of the [RS5 user manual](references/dji-rs5-user-manual.pdf).
 - [DJI's illustrated pinout](references/dji-sdk-pinout.png), from PDF page 21 / printed page 19 of the [SDK](references/dji-r-sdk-v2.5.pdf).
 
 ## Electrical design
 
-Treat the following as the proposed wiring pending RS5 pad-orientation confirmation. A fit gauge proves mechanical alignment only; it cannot identify ground, power or CAN signals.
+The user's Waveshare/Mill-Max wiring has already worked for RS5 control and wired tag tracking. Preserve that harness. For a new or rebuilt harness, identify every contact before applying power; the reference below is inherited from the older SDK, and a fit gauge cannot identify electrical signals.
 
 The inherited RSA contact layout has **eight pads in two rows of four**; check this against the exposed RS5 port. DJI assigns six signal numbers because power and ground each appear twice. The numbers below are DJI's signal labels, not sequential positions in an eight-pin header.
 
@@ -75,7 +185,7 @@ RS5 AD_COM ------- 47 kOhm ------- RS5 GND
 
 An SN65HVD230 breakout is suitable: it operates from 3.3 V and supports 1 Mbit/s. Use high-speed mode (RS low, per TI's datasheet), local supply decoupling, and check whether the module already contains a termination resistor. ESP32 GPIOs cannot connect directly to CAN-H/L. ESP32's built-in TWAI controller supplies the controller function; the transceiver supplies the electrical interface. Select GPIOs appropriate to your particular ESP32 board. A classic Arduino Uno instead needs a CAN controller as well as a transceiver.
 
-For the **Adafruit Feather ESP32-S3, 8 MB flash / no PSRAM**, the [test firmware](firmware/README.md) selects **pin 5 (GPIO5) to Waveshare CAN TX** and **pin 6 (GPIO6) from Waveshare CAN RX**, with the Feather's 3V output and common GND. GPIO4 is the Feather's I2C SCL line and is left available for its onboard devices and STEMMA QT. The firmware always listens passively at 1 Mbit/s and sends no CAN messages, acknowledgments, or error frames.
+For the **Adafruit Feather ESP32-S3, 8 MB flash / no PSRAM**, all body-side sketches use **pin 5 (GPIO5) to Waveshare CAN TX** and **pin 6 (GPIO6) from Waveshare CAN RX**, with the Feather's 3V output and common GND. GPIO4 is the Feather's I2C SCL line and is left available for its onboard devices and STEMMA QT. The [CAN monitor](firmware/README.md) is a passive diagnostic; the wired and wireless control sketches use normal 1 Mbit/s CAN and send DJI commands when operated through Control Desk.
 
 The connector has approximately 203 mm (8 inches) of 24 AWG leads. Identify and gently twist the CAN-H/L pair, keeping a short transition at the connector. Run ground alongside the pair. The detect lead goes to a terminal with the 47 kOhm resistor to ground. Bare lead ends can connect to a suitable screw-terminal CAN breakout; the pogo block itself needs no soldering or crimping. Anchor the insulated wires to the rear cover's cable-tie ear, allowing a gentle bend after they leave the holes. Individually insulate unused leads.
 

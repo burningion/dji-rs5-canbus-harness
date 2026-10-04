@@ -1,6 +1,10 @@
 # RS5 manual pan/tilt and UWB follow firmware
 
+For the cable-free moving camera, use the [wireless body build](../rs5_wireless_control/README.md) of this controller and the [camera radio/shared-battery setup](../WIRELESS_UWB.md). This sketch remains the direct-UART build.
+
 Companion to the [local mouse / PS4 UI](../../control_ui/README.md), with X-to-toggle Makerfabs UWB pan follow. [Wiring, first setup, and controls](../../control_ui/UWB_SETUP.md). Exact board: **Adafruit Feather ESP32-S3 8 MB / No PSRAM**. Existing verified wiring remains GPIO5 → Waveshare TX, GPIO6 → RX, 3.3 V supply, shared ground, and CAN H/L to the RS5. Accessory VCC stays insulated.
+
+**Hardware status, updated 2026-10-04:** the user confirmed that the direct `anchor → ESP32 → Waveshare → Mill-Max harness → RS5` setup successfully tracked the tag. The wired interface and following are validated on that setup; the added two-ESP32 wireless path needs its own hardware check.
 
 ```sh
 arduino-cli compile --fqbn esp32:esp32:adafruit_feather_esp32s3_nopsram --warnings all --build-path "$PWD/tmp/firmware-build-manual" --output-dir "$PWD/tmp/firmware-manual" firmware/rs5_manual_control
@@ -33,7 +37,7 @@ Each stop rotates the session token. Delayed, malformed, replayed, or out-of-ran
 
 The combined build compiles for the exact Feather board with Arduino-ESP32 3.3.11: **382,766 bytes flash** and **59,688 bytes static RAM**. Sanitized tests exercise the actual sketch with framed UART data and simulated CAN, including follow leases, tag loss, replay, parser errors, UART overrun, loop stalls, USB/joint loss, direction/speed limits, and manual fallback. Python/JavaScript integration checks cover UI and bridge behavior. See the [full setup and validation](../../control_ui/UWB_SETUP.md).
 
-Flashed and hash-verified on the connected Feather on **2026-09-29**, using `/dev/cu.usbmodem101`. The actual-sketch UWB and manual transport tests passed again before upload. An eight-second passive USB check captured 160 status samples and **280 incoming UWB reports from tag `0E4C`**, with zero UWB parsing errors and zero sampled CAN error counters. The device advertised protocol 2, UWB support, 60°/s manual maximum and 5°/s initial follow maximum. It remained disarmed, unconfigured and at zero requested speeds throughout. No serial commands, CAN queries or motion commands were sent during this check; steering direction and physical following remain untested. Logs: `tmp/rs5-ui-uwb-flash-check.jsonl` and `tmp/rs5-ui-uwb-flash-summary.json` (includes application SHA-256). The anchor and tag retain their factory firmware. Select/apply the intended tag in the UI before following; it is not automatically selected by this verification.
+Flashed and hash-verified on the connected Feather on **2026-09-29**, using `/dev/cu.usbmodem101`. The actual-sketch UWB and manual transport tests passed again before upload. An eight-second passive USB check captured 160 status samples and **280 incoming UWB reports from tag `0E4C`**, with zero UWB parsing errors and zero sampled CAN error counters. The device advertised protocol 2, UWB support, 60°/s manual maximum and 5°/s initial follow maximum. It remained disarmed, unconfigured and at zero requested speeds throughout. No serial commands, CAN queries or motion commands were sent during this check; that check did not test steering direction or physical following. The user's later wired tracking confirmation is recorded above. Logs: `tmp/rs5-ui-uwb-flash-check.jsonl` and `tmp/rs5-ui-uwb-flash-summary.json` (includes application SHA-256). The anchor and tag retain their factory firmware. Select/apply the intended tag in the UI before following; it is not automatically selected by this verification.
 
 ## Earlier manual-only validation
 

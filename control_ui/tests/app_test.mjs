@@ -150,3 +150,37 @@ followTick(); ids['uwb-follow'].emit('click'); followTick(true);
 ids['uwb-speed'].value='6'; ids['uwb-speed'].emit('input'); followTick();
 assert(!latestInput().held); assert(ids['uwb-follow'].disabled);
 console.log('Real frontend UWB flow: X toggle, no held-X restart, Circle/manual/focus/disconnect/stall stops and settings gating passed.');
+
+// Optional camera: absence never locks manual controls; detection only offers follow.
+ids.pad.emit('pointerup',pointer());
+ids['uwb-speed'].value='5';
+function cameraTick(observed, configured=false) {
+  now+=50;
+  state({uwb_ready:observed && configured,
+    device:{fresh:true,can_ready:true,probing:true,yaw:0,pitch:0,roll:0,bus_errors:0,replies:5,
+      uwb:{transport:'esp-now',radio_ready:true,configured,tag:0x1234,observed,
+        observed_tag:0x1234,fresh:observed && configured,following:false,
+        bearing:15,range_m:3,direction:1,zero:0,max_speed:5}}});
+  frame(now);
+}
+cameraTick(false);
+assert.equal(ids['uwb-badge'].textContent,'NO UWB');
+assert(ids['uwb-follow'].disabled);
+assert.match(ids['uwb-status'].textContent,/Manual control is available/);
+assert(jog.every(button=>!button.disabled));
+ids.pad.emit('pointerdown',pointer());
+assert.equal(latestInput().source,'mouse');
+cameraTick(true);
+assert.equal(ids['uwb-badge'].textContent,'TAG DETECTED');
+assert(ids['uwb-follow'].disabled);
+assert.equal(latestInput().source,'mouse');
+cameraTick(false);
+assert.equal(latestInput().source,'mouse');
+ids.pad.emit('pointerup',pointer());
+cameraTick(true,true);
+assert.equal(ids['uwb-badge'].textContent,'TAG LIVE');
+assert(!ids['uwb-follow'].disabled);
+assert(!latestInput().held); // Availability alone never starts motion.
+ids['uwb-follow'].emit('click');
+assert.equal(latestInput().source,'uwb');
+console.log('Optional UWB: camera detection/loss leaves manual input available; only an explicit action starts follow.');

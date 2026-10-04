@@ -1,17 +1,67 @@
 {
-  "prototype": "E",
+  "prototype": "G",
   "physical_fit_verified": false,
   "rf_tested": false,
+  "board_stack": {
+    "order_bottom_to_top": [
+      "battery",
+      "shield",
+      "Feather ESP32-S3",
+      "STM32 anchor + upright antenna"
+    ],
+    "shield_feather_stm32_z_mm": [
+      9.3,
+      13.5,
+      26.5
+    ],
+    "board_spacing_mm": 13,
+    "feather_retention": "Two rear M2 x 6 screws and heat-set inserts; two front 1.8 mm locating pins in 2.2 mm holes",
+    "stm32_retention": "Two rear M2 x 6 screws and heat-set inserts; two 0.8 mm front-edge keepers",
+    "insert_pockets_pins_keepers_probed": true,
+    "usb_opening_width_height_mm": [
+      12,
+      7
+    ],
+    "usb_opening_both_faces_probed": true,
+    "pin_headers_fitted": false,
+    "board_driver_shaft_diameter_mm": 4,
+    "physical_validation": false
+  },
+  "switch": {
+    "opening_width_height_mm": [
+      13.5,
+      8.4
+    ],
+    "measured_body_width_height_mm": [
+      13.27,
+      8.18
+    ],
+    "total_clearance_width_height_mm": [
+      0.23,
+      0.22
+    ],
+    "additional_fit_allowance_mm": 0,
+    "center_y_z_mm": [
+      -2,
+      34.1
+    ],
+    "exported_wall_x_mm": 0,
+    "assembly_wall_x_mm": -3.7,
+    "reserved_depth_from_outer_wall_mm": 20,
+    "user_approximate_depth_including_terminals_mm": 15,
+    "both_wall_faces_and_exact_corners_verified": true,
+    "actual_depth_flange_clips_terminals_verified": false
+  },
   "dimensions_mm": {
     "body": [
       87.7,
       58.0,
-      26.7
+      41.1
     ],
     "overall": [
       87.7,
       58.0,
-      59.81
+      72.81
     ]
   },
   "installed_radio_position": "Front face aligned to 72 mm PCB edge per user; rear face 68 mm inferred from approximate 4 mm depth; header envelope still provisional",
@@ -48,14 +98,19 @@
     "floor_holes_and_closed_old_center_verified": true
   },
   "contacts_mm3": {
-    "collision": 0.0,
-    "case_collision": 9.663381206337363e-12,
-    "fastener_collision": 1.9648875119552638e-11,
+    "collision": 6.622258297284134e-12,
+    "case_collision": 7.25700980789649e-12,
+    "fastener_collision": 8.147556703382483e-12,
     "fastener_electronics_collision": 0.0,
-    "driver_collision": 9.909702688067531e-12,
+    "driver_collision": 7.63596593363521e-12,
     "lid_lift_collision": 0.0,
     "radio_sweep_collision": 0.0,
-    "wire_exit_collision": 0.0
+    "wire_exit_collision": 0.0,
+    "switch_space_collision": 0.0,
+    "usb_space_collision": 0.0,
+    "electronics_collision": 0.0,
+    "board_service_collision": 2.605323364453701e-12,
+    "board_driver_collision": 0.0
   },
   "print_plate": {
     "parts": [
@@ -71,14 +126,14 @@
     ]
   },
   "wire_exit": {
-    "enabled": true,
+    "enabled": false,
     "face": "Rear / -X / USB end, opposite antenna",
     "width_height_mm": [
       7,
       4
     ],
     "center_y_mm": 16.3,
-    "old_side_openings_closed_verified": true,
+    "old_side_openings_closed_verified": false,
     "tie_band_recess_depth_mm": 1,
     "trial_bundle_diameter_mm": 3
   },
@@ -86,7 +141,7 @@
     "screw_access": "From above; four blind insert pockets in base posts",
     "screw_centers_xy_mm": [
       [
-        8,
+        22,
         -6.2
       ],
       [
@@ -115,35 +170,35 @@
     "physical_access_verified": false,
     "lid_pcb_locating_pillars": 0,
     "former_pillar_volumes_clear_verified": true,
-    "pcb_retention": "Incomplete: 5 mm-diameter supports have 3.1 mm-diameter, 1.2 mm-deep legacy locating sockets, not screw mounts. Lid does not retain PCB. Base and print plate require a PCB mounting revision.",
-    "continuous_radio_sweep_travel_mm": 60,
-    "pcb_mounting_complete": false
+    "pcb_mounting_modeled": true,
+    "pcb_retention": "Two M2 screws in rear STM32 mounting holes plus front-edge keepers; front holes have plain supports. Remove screws, slide PCB 1.5 mm rearward, then lift with antenna attached. Physical retention unverified.",
+    "continuous_radio_sweep_travel_mm": 60
   },
-  "collision_scope": "Simplified components, four printed parts, six M3 screws and two measured cage screw envelopes; top driver clearance, sampled lid removal, continuous 60 mm radio/header sweep and trial wire bundle at rear exit; heat-set knurls and cage excluded; PCB fasteners absent from design and checks, PCB retention incomplete",
+  "collision_scope": "Simplified components including bare Feather/USB/mated JST; both PCB screw sets; printed parts, lid driver, sampled lid and board removal, radio sweep; 20 mm switch corridor and trial USB plug corridor. Actual switch flange/clips/terminals, wiring, heat-set knurls and camera/cage excluded. Component heights and RF behavior need physical validation.",
   "meshes": [
     {
       "file": "design/mauwb-anchor/base.stl",
-      "triangles": 5004,
+      "triangles": 6584,
       "closed": true,
       "components": 1,
       "bounds_mm": [
         87.7,
         58.0,
-        23.7
+        38.1
       ],
-      "volume_mm3": 23203.15
+      "volume_mm3": 29793.902
     },
     {
       "file": "design/mauwb-anchor/cover.stl",
-      "triangles": 3604,
+      "triangles": 3628,
       "closed": true,
       "components": 1,
       "bounds_mm": [
         87.7,
         58.0,
-        23.9
+        38.3
       ],
-      "volume_mm3": 18360.283
+      "volume_mm3": 25281.803
     },
     {
       "file": "design/mauwb-anchor/hood.stl",
@@ -153,13 +208,13 @@
       "bounds_mm": [
         16.2,
         58.0,
-        33.11
+        31.71
       ],
-      "volume_mm3": 4908.559
+      "volume_mm3": 4735.855
     },
     {
       "file": "design/mauwb-anchor/shield.stl",
-      "triangles": 216,
+      "triangles": 680,
       "closed": true,
       "components": 1,
       "bounds_mm": [
@@ -167,7 +222,7 @@
         43.48,
         1.2
       ],
-      "volume_mm3": 2545.335
+      "volume_mm3": 2472.541
     },
     {
       "file": "design/mauwb-anchor/fit-gauge.stl",
@@ -206,16 +261,40 @@
       "volume_mm3": 6865.839
     },
     {
+      "file": "design/mauwb-anchor/board-insert-coupon.stl",
+      "triangles": 812,
+      "closed": true,
+      "components": 1,
+      "bounds_mm": [
+        48.0,
+        12.0,
+        7.0
+      ],
+      "volume_mm3": 3897.951
+    },
+    {
+      "file": "design/mauwb-anchor/switch-coupon.stl",
+      "triangles": 32,
+      "closed": true,
+      "components": 1,
+      "bounds_mm": [
+        23.5,
+        18.4,
+        1.8
+      ],
+      "volume_mm3": 574.2
+    },
+    {
       "file": "design/mauwb-anchor/print-plate.stl",
-      "triangles": 9496,
+      "triangles": 11564,
       "closed": true,
       "components": 4,
       "bounds_mm": [
         91.2,
         190.0,
-        33.11
+        38.3
       ],
-      "volume_mm3": 49017.303
+      "volume_mm3": 62284.071
     }
   ]
 }

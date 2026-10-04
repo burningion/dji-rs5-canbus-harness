@@ -82,6 +82,27 @@ class UwbTests(unittest.TestCase):
         self.input('mouse', 10)
         self.assertEqual(self.commands[-1], 'arm 42 100')
 
+    def test_optional_camera_detection_never_takes_over_manual_control(self):
+        self.bridge.accept_device(device(uwb=uwb(configured=False, observed=False, fresh=False,
+                                               transport='esp-now', radio_ready=True)))
+        self.assertTrue(self.bridge.ready())
+        self.assertFalse(self.bridge.uwb_ready())
+        self.input()
+        self.input('mouse', 10)
+        self.assertEqual(self.commands[-1], 'arm 42 100')
+        for visible in (False, True, False):
+            self.bridge.accept_device(device(armed=True, uwb=uwb(observed=visible, fresh=visible)))
+            self.bridge.tick()
+            self.input('mouse', 10)
+            self.assertTrue(self.bridge.enabled)
+            self.assertEqual(self.bridge.source, 'mouse')
+            self.assertTrue(self.commands[-1].startswith('drive '))
+        self.input()
+        self.bridge.accept_device(device(uwb=uwb()))
+        self.assertTrue(self.bridge.uwb_ready())
+        self.assertFalse(self.bridge.enabled)
+        self.assertFalse(any(c.startswith('track ') for c in self.commands))
+
     def test_invalid_or_replayed_follow_input_stops(self):
         self.start()
         with self.assertRaises(ControlError): self.input('uwb', 1)

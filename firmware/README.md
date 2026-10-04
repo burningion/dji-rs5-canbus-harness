@@ -1,4 +1,17 @@
-# RS5 CAN monitor for Adafruit Feather ESP32-S3
+# RS5 firmware
+
+**For the camera-to-RS5 wireless setup, flash both ESP32s using the [main README's complete flashing and pairing steps](../README.md#flash-both-esp32s).** Both boards are Adafruit Feather ESP32-S3, 8 MB / No PSRAM, using Arduino-ESP32 3.3.11.
+
+| Use | Firmware |
+| --- | --- |
+| Camera ESP32: anchor UART → ESP-NOW | [rs5_anchor_radio](rs5_anchor_radio/README.md) |
+| RS5-body ESP32: ESP-NOW → tracking → Waveshare CAN → Mill-Max harness | [rs5_wireless_control](rs5_wireless_control/README.md) |
+| Original wired UART → CAN setup, with Control Desk | [rs5_manual_control](rs5_manual_control/README.md) |
+| Passive CAN diagnostics | `rs5_can_monitor`, documented below |
+
+The user confirmed the Mill-Max interface and successful tag following through the direct wired path on 2026-10-04. The wireless firmware is implemented and software-tested; physical pairing and wireless following still need validation. The anchor and tag retain their factory firmware. See [wireless wiring/power](WIRELESS_UWB.md) and [Control Desk setup](../control_ui/UWB_SETUP.md).
+
+## RS5 CAN monitor for Adafruit Feather ESP32-S3
 
 Open [rs5_can_monitor/rs5_can_monitor.ino](rs5_can_monitor/rs5_can_monitor.ino) in Arduino IDE. The target is the **Adafruit ESP32-S3 Feather with STEMMA QT / Qwiic, 8 MB flash, no PSRAM (product 5323)**, using its built-in TWAI controller and the Waveshare SN65HVD230 transceiver. No additional Arduino libraries are required.
 

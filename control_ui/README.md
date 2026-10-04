@@ -2,6 +2,8 @@
 
 A local browser UI for manual **pan and tilt**, using a mouse or a PS4 / DualShock 4 controller, plus **X-to-toggle UWB pan follow** using the Makerfabs STM32 AoA kit. See the [UWB wiring and setup guide](UWB_SETUP.md). Roll speed is always zero. The USB-connected Feather talks to the RS5 through the existing Waveshare CAN wiring. The controller connects to the **Mac**, by USB or Bluetooth.
 
+The **RS5-body ESP32 is the master**. Manual control works with the camera UWB node absent or off. Once paired, the camera ESP32 supplies measurements automatically when available. The UWB panel shows **NO UWB**, **TAG DETECTED**, or **TAG LIVE**; only a fresh selected tag enables follow. Camera detection/loss does not take over a manual gesture, and detection never starts movement. [Flash and pair both ESP32s](../README.md#flash-both-esp32s).
+
 ## Start
 
 Requires Python 3.11+ with pyserial and aiohttp. Both were already installed on this Mac. On a new machine, use a virtual environment and `python3 -m pip install -r control_ui/requirements.txt`.
@@ -58,7 +60,7 @@ The bridge also permits up to **20 ms** for a recently written USB setup/stop me
 
 ## Firmware
 
-Use the combined [rs5_manual_control](../firmware/rs5_manual_control/README.md) for manual and UWB follow, not the finite bench-test or passive-monitor firmware. The UI requires protocol v2 with a reported 60°/s manual capability; UWB follow also requires the new `uwb` capability/status object. Older v2 firmware remains manual-only; it will not enable against older console formats or the earlier 10°/s manual firmware. Boot starts in normal CAN mode (acknowledging frames) with no application commands; Connect starts joint queries. Fresh held mouse/L1 input automatically requests a zero-speed control session, waits for the device to acknowledge it, and then forwards new input; release ends the session. The bridge never generates motion from cached input. The app does not change stored RS5 settings or limits.
+Use [rs5_wireless_control](../firmware/rs5_wireless_control/README.md) on the body master and [rs5_anchor_radio](../firmware/rs5_anchor_radio/README.md) on the camera for wireless UWB. The combined [rs5_manual_control](../firmware/rs5_manual_control/README.md) remains the direct-UART option. The UI requires protocol v2 with a reported 60°/s manual capability; UWB follow also requires the `uwb` capability/status object. Older v2 firmware remains manual-only; it will not enable against older console formats or the earlier 10°/s manual firmware. Boot starts in normal CAN mode (acknowledging frames) with no application commands; Connect starts joint queries. Fresh held mouse/L1 input automatically requests a zero-speed control session, waits for the device to acknowledge it, and then forwards new input; release ends the session. The bridge never generates motion from cached input. The app does not change stored RS5 settings or limits.
 
 ## Demo and checks
 
@@ -115,4 +117,4 @@ A **90-second read-only hardware check received 900 validated joint replies**, w
 
 ### Combined UWB update — 2026-09-29
 
-UWB follow is integrated into the same UI, bridge, and Feather firmware as mouse/PS4 control. Factory Makerfabs UART input goes to RX/GPIO38; CAN wiring stays GPIO5/6. X toggles follow with a fresh tag, while manual input cancels it. The UI includes tag selection, live range/bearing, separate direction/center/speed settings, and an expandable connection layout. See [UWB setup and validation](UWB_SETUP.md). This combined build is compiled and host-tested, but not yet flashed or physically tracking-tested. The hardware results above describe earlier manual firmware.
+UWB follow is integrated into the same UI, bridge, and Feather firmware as mouse/PS4 control. In the wired build, factory Makerfabs UART input goes to RX/GPIO38; CAN wiring stays GPIO5/6. X toggles follow with a fresh tag, while manual input cancels it. The UI includes tag selection, live range/bearing, separate direction/center/speed settings, and an expandable connection layout. See [UWB setup and validation](UWB_SETUP.md). The combined wired build was flashed and hash-verified on 2026-09-29. On 2026-10-04 the user confirmed successful wired tracking through the anchor, ESP32, Waveshare and Mill-Max harness. The newer two-ESP32 wireless connection is implemented and software-tested; physical wireless following remains to be checked.

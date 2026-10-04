@@ -1,6 +1,6 @@
 {
   "units": "mm",
-  "revision": "E - rear wire exit and complete four-part print plate",
+  "revision": "G - Feather below STM32; both boards retained; Feather USB-C access; exact rocker opening with direct battery-positive switching",
   "photo": "User supplied IMG_4084.jpeg, overhead view, 2026-09-29",
   "coordinates": {
     "x": "USB end toward lens",
@@ -127,14 +127,15 @@
     "cage_mount_holes_and_seats_unchanged": true
   },
   "remaining_checks": [
-    "Delivered carrier revision and holes",
-    "Physical fit of inferred x=68...72 antenna envelope and repositioned lid opening/hood",
-    "Highest underside part, display and mated battery plug",
-    "Camera/cage contact face, lens alignment, printed top closure fit and vertical lid access and gimbal swept clearance",
-    "Case vs bare-board bearing and RF performance",
-    "Design PCB screw mounts and validate retention, header clearance and front-hole access; check module projections and lead slack",
-    "Printed fit of measured cage screws, thread engagement and available cage hole depth",
-    "Rear wire routing, bundle clearance and tie band sitting inside its underside recess"
+    "Delivered STM32 and Feather board revisions and mounting holes",
+    "Printed M2 insert fit, screw-head dimensions and front-pin fit; STM32 clear front-edge land and keeper fit",
+    "Physical antenna/header envelope, keepers and sampled board service paths",
+    "PCB thickness, highest underside joints and mated JST heights; actual USB cable plug reach",
+    "Camera/cage seating, lens alignment, gimbal swept clearance and balance with taller case",
+    "Enclosed Feather link reliability across gimbal travel and bare/enclosed UWB bearing",
+    "Cage screw fit, thread engagement and available depth",
+    "Switch flange/clips/terminal spread and insulated lead routing",
+    "Direct battery-switch harness polarity, switch DC rating/current, USB/OFF behavior, net charging current and charge termination with the anchor load"
   ],
   "radio_user_measurements": {
     "width": 33,
@@ -145,11 +146,11 @@
     "front_mounting_holes_covered_when_installed": true
   },
   "closure": {
-    "reason": "Revision C lid pillars collide with antenna, which covers front PCB holes after installation. Removing those pillars left PCB retention unresolved; prior independent-fastening assumption was incorrect.",
+    "reason": "Independent base mounts now retain both PCBs; no lid pillars or front STM32 screws compete with antenna.",
     "interface": "Four M3 x 8 countersunk screws inserted downward through lid into heat-set inserts in base posts",
     "screw_centers_xy": [
       [
-        8,
+        22,
         -6.2
       ],
       [
@@ -166,13 +167,13 @@
       ]
     ],
     "post_diameter": 9.4,
-    "post_top_z": 23.7,
+    "post_top_z": 38.1,
     "insert_trial_pocket_diameter": 4.6,
     "insert_pocket_depth": 5,
     "insert_length": 4,
     "lid_seat_thickness": 2.8,
     "post_to_lid_axial_clearance": 0.2,
-    "reason_for_asymmetric_pattern": "Rear positive-Y post moves forward to clear tall battery connector",
+    "reason_for_asymmetric_pattern": "Revision F moves rear negative-Y post from x=8 to x=22 for switch corridor; now symmetric, existing positive-Y post clears anchor battery connector",
     "screwdriver_shaft_envelope_diameter": 8,
     "sampled_vertical_lid_lift_offsets": [
       0.2,
@@ -183,50 +184,30 @@
     ],
     "reprint": [
       "base",
-      "cover"
+      "cover",
+      "hood",
+      "shield"
     ],
     "reuse": [
-      "revision-D hood",
-      "existing shield",
-      "existing cage, lid and hood screws"
+      "existing cage screws",
+      "existing lid and hood screws"
     ],
     "physical_access_verified": false,
-    "cage_screw_access": "Remove cover/hood from above; detach antenna as needed to reach PCB screws, release/lift PCB, remove shield, then undo cage screws",
+    "cage_screw_access": "Remove cover/hood; unplug leads, remove STM32 rear screws, slide/lift STM32; remove Feather rear screws, lift Feather and shield; access cage screws",
     "lid_pcb_locating_pillars": 0,
-    "pcb_retention": "Incomplete: 5 mm-diameter supports have 3.1 mm-diameter, 1.2 mm-deep legacy locating sockets, not screw mounts. Lid does not retain PCB. Base and print plate require a PCB mounting revision.",
+    "pcb_retention": "Two rear M2 screws plus two integral front-edge keepers; plain supports at front mounting holes",
     "continuous_radio_sweep_travel": 60,
-    "pcb_mounting_complete": false
+    "pcb_mounting_modeled": true
   },
   "wire_exit": {
-    "request": "User requested wires leave at rear, opposite antenna, 2026-09-30",
-    "face": "Rear / negative X / USB-display end",
-    "opening_count": 1,
-    "opening_width_height": [
+    "enabled": false,
+    "opening_count": 0,
+    "reason": "Wireless camera node: all signal wiring remains internal",
+    "former_opening_width_height": [
       7,
       4
     ],
-    "center_y": 16.3,
-    "bottom_z": 2.8,
-    "routing": "Both signal wires share the rear seam opening; keep leads clear of battery, screws and lid joint",
-    "old_side_openings_removed": true,
-    "tie_slot_centers_xy": [
-      [
-        0.5,
-        11.3
-      ],
-      [
-        0.5,
-        21.3
-      ]
-    ],
-    "tie_slot_size_xy": [
-      3.2,
-      1.8
-    ],
-    "underside_tie_band_recess_depth": 1,
-    "minimum_floor_above_band_recess": 1.8,
-    "trial_bundle_diameter": 3,
-    "physical_wire_fit_verified": false
+    "former_tie_slots_and_recess_closed": true
   },
   "print_plate": {
     "file": "print-plate.stl",
@@ -244,5 +225,165 @@
     "scale_percent": 100,
     "orientation": "Base flat; cover roof-down; hood open-end-down; shield flat",
     "gauges_and_insert_coupon_included": false
+  },
+  "switch": {
+    "model": "User measured KCD11-101 style rocker",
+    "opening_width_height": [
+      13.5,
+      8.4
+    ],
+    "body_width_height": [
+      13.27,
+      8.18
+    ],
+    "total_clearance_width_height": [
+      0.23,
+      0.22
+    ],
+    "additional_fit_allowance": 0,
+    "depth_including_terminals_approx": 15,
+    "reserved_depth_from_outer_wall": 20,
+    "assembly_center_y_z": [
+      -2,
+      34.1
+    ],
+    "assembly_wall_x": -3.7,
+    "exported_wall_x": 0,
+    "panel_thickness": 1.8,
+    "aperture_corner_radius": 0,
+    "aperture_chamfer": 0,
+    "flange_and_clip_shape_verified": false,
+    "physical_fit_verified": false,
+    "electrical_connection": "SPST rocker in battery positive upstream of Feather battery JST; Feather BAT feeds anchor BAT positive; negative/GND continuous",
+    "contacts_closed": "ON; battery connected to both boards and Feather charger",
+    "contacts_open": "Battery OFF; cell disconnected from charging; USB can still energize circuit",
+    "source": "User dimensions and approximate depth, 2026-10-04",
+    "upward_shift_from_revision_f": 14.4,
+    "electrical_choice_source": "User selected direct battery switching, 2026-10-04"
+  },
+  "power": {
+    "battery_connection": "Battery positive through rocker to camera Feather JST positive; Feather BAT/GND directly to anchor BAT pigtail; battery negative continuous",
+    "charge_input": "Camera Feather USB-C only; rocker ON to connect cell; net charging and termination with anchor load unverified",
+    "charge_current_mA_nominal_from_schematic": 196,
+    "anchor_usb": "Disconnected in assembled system; unplug anchor BAT pigtail and UART for independent USB servicing",
+    "physical_validation": false,
+    "feather_mount_and_usb_opening_modeled": true,
+    "external_load_switch_required": false,
+    "feather_en": "Leave externally unconnected",
+    "charging_with_both_boards_off_supported": false,
+    "usb_present_switch_off": "Cell disconnected; Feather can run from USB and charger BAT output remains connected to anchor; not a validated batteryless operating mode",
+    "unloaded_charge_check": "Disconnect anchor BAT pigtail and UART with USB/cell unplugged, then reconnect cell, rocker ON, charge via Feather USB"
+  },
+  "feather": {
+    "model": "Adafruit Feather ESP32-S3 8MB Flash / No PSRAM, PID 5323",
+    "source": "https://github.com/adafruit/Adafruit-Feather-ESP32-S3-PCB/blob/main/Adafruit%20ESP32-S3%208MB%20No%20PSRAM.brd",
+    "source_read_date": "2026-10-04",
+    "downloaded_source_sha256": "5b06b9c6291545a2c9da0993a642e513a75c5901e26836a2ee559077147abcca",
+    "outline_length_width": [
+      50.8,
+      22.86
+    ],
+    "corner_radius": 2.54,
+    "hole_centers_local_xy": [
+      [
+        2.54,
+        2.54
+      ],
+      [
+        2.54,
+        20.32
+      ],
+      [
+        48.26,
+        1.8415
+      ],
+      [
+        48.26,
+        20.955
+      ]
+    ],
+    "hole_diameters": [
+      2.5,
+      2.5,
+      2.2,
+      2.2
+    ],
+    "placement_xyz": [
+      0,
+      4.7,
+      13.5
+    ],
+    "retention": "Two rear M2 x 6 screws into base inserts; two front supports with 1.8 mm plastic locating pins",
+    "pcb_thickness_provisional": 1.6,
+    "mated_jst_height_above_pcb_provisional": 8,
+    "headers_fitted": false,
+    "headers_basis": "User confirmed no headers; direct wires, 2026-10-04",
+    "usb_center_assembly_y_z": [
+      16.13,
+      16.75
+    ],
+    "usb_opening_width_height": [
+      12,
+      7
+    ],
+    "usb_connector_face_assembly_x": -1.143,
+    "usb_face_recess_from_outer_wall": 2.557,
+    "usb_height_and_cable_body_allowance_provisional": true,
+    "physical_fit_verified": false
+  },
+  "stack": {
+    "order": [
+      "battery",
+      "shield",
+      "Feather ESP32-S3",
+      "STM32 anchor and upright antenna"
+    ],
+    "shield_feather_stm32_z": [
+      9.3,
+      13.5,
+      26.5
+    ],
+    "board_underside_spacing": 13,
+    "body_length_width_height": [
+      87.7,
+      58,
+      41.1
+    ],
+    "overall_length_width_height": [
+      87.7,
+      58,
+      72.81
+    ],
+    "feather_solder_to_shield_clearance": 1,
+    "feather_jst_to_stm32_underside_parts_clearance": 1.4,
+    "board_insert_trial_diameter": 3,
+    "board_insert_pocket_depth": 3.8,
+    "board_insert_core_diameter": 2.2,
+    "board_insert_core_extra_depth": 1,
+    "board_insert_nominal_length": 3,
+    "board_insert_approx_outer_diameter": 3.2,
+    "board_screw_size": "M2 x 6",
+    "board_screw_count": 4,
+    "board_insert_count": 4,
+    "stm32_retention": "Two rear M2 screws plus two integral front-edge keepers; plain supports at front mounting holes",
+    "stm32_keeper_overlap": 0.8,
+    "stm32_keeper_vertical_clearance": 0.2,
+    "stm32_keeper_contact_xy": [
+      [
+        71.2,
+        8,
+        72,
+        12
+      ],
+      [
+        71.2,
+        22,
+        72,
+        26
+      ]
+    ],
+    "stm32_service": "Remove two rear screws; slide 1.5 mm toward USB, then lift with antenna attached",
+    "rf_note": "Feather antenna sits below STM32 PCB; mechanical clearance does not validate RF performance",
+    "physical_fit_verified": false
   }
 }

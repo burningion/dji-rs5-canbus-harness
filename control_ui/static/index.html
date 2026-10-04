@@ -64,7 +64,7 @@
             <label>Center offset (°)<input id="uwb-zero" type="number" min="-30" max="30" step="0.1" value="0"></label>
           </div>
           <button id="uwb-apply" class="secondary" disabled>Apply UWB settings</button>
-          <p id="uwb-status" class="setting-help" role="status">Connect the Feather to see your anchor.</p>
+          <p id="uwb-status" class="setting-help" role="status">Connect the RS5 controller. UWB follow is optional.</p>
           <button id="uwb-follow" class="primary" disabled>Start UWB follow · X</button>
           <p class="limit-note">Pan only. X toggles follow; Circle stops.<br>L1 or mouse cancels; release and hold again to steer.</p>
         </section>
@@ -77,16 +77,17 @@
     </div>
     <section class="help-row">
       <details class="wiring-help"><summary><span>UWB connection layout &amp; first setup</span><span>+</span></summary><div class="help-content">
-        <div class="connection-flow" aria-label="Tracking signal path"><span>Tag on subject</span><span>→ UWB →</span><span>Anchor on camera</span><span>→ UART →</span><span>Feather</span><span>→ CAN →</span><span>RS5</span></div>
+        <div class="connection-flow" aria-label="Wireless tracking signal path"><span>Tag on subject</span><span>→ UWB →</span><span>Anchor + camera ESP32</span><span>→ radio →</span><span>RS5 ESP32</span><span>→ CAN →</span><span>RS5</span></div>
+        <p>The RS5 ESP32 is the main controller. Mouse and PS4 control work with the camera node off. Once paired, the camera node supplies UWB measurements when available; select your tag and wait for TAG LIVE to add follow. Detection never starts movement. The body ESP32 stays connected to Control Desk by USB.</p>
         <p>Mount the anchor so it <strong>turns with the lens</strong>, with its measurement plane horizontal. Keep the camera approximately level. This kit tracks horizontal bearing, not subject height. A handle-mounted anchor needs a different controller.</p>
         <table><thead><tr><th>From</th><th>To</th></tr></thead><tbody>
-          <tr><td>Anchor TXD1 / PA9 (J2 pin 4)</td><td>Feather RX / GPIO38</td></tr>
-          <tr><td>Anchor GND (J2 pin 2)</td><td>Feather GND</td></tr>
-          <tr><td>Feather 5 / 6</td><td>Waveshare TX / RX</td></tr>
-          <tr><td>Feather 3V / GND</td><td>Waveshare 3.3V / GND</td></tr>
+          <tr><td>Anchor TXD1 / PA9 (J2 pin 4)</td><td>Camera Feather RX / GPIO38</td></tr>
+          <tr><td>Anchor GND (J2 pin 2)</td><td>Camera Feather GND</td></tr>
+          <tr><td>Body Feather 5 / 6</td><td>Waveshare TX / RX</td></tr>
+          <tr><td>Body Feather 3V / GND</td><td>Waveshare 3.3V / GND</td></tr>
           <tr><td>Waveshare CANH / CANL / GND</td><td>Existing verified RS5 CANH / CANL / GND</td></tr>
         </tbody></table>
-        <p>Identify pads by silkscreen and the Makerfabs V1.1 schematic, not a viewing-angle pin count. UART is <strong>3.3 V, 115200 8N1</strong>. Leave Feather TX/GPIO39 and anchor RXD1 unconnected. Power the anchor and Feather by separate USB supplies with common ground; power the tag by USB or its supported battery. Keep supply rails and RS5 accessory VCC separate.</p>
+        <p>Identify pads by silkscreen and the Makerfabs V1.1 schematic, not a viewing-angle pin count. UART is <strong>3.3 V, 115200 8N1</strong>. Leave Feather TX/GPIO39 and anchor RXD1 unconnected. The camera node has its own power; no UART or ground cable runs to the body. Follow the repository's wireless power and pairing guide. Keep RS5 accessory VCC insulated. For the original wired setup, the anchor UART and ground connect directly to the body Feather instead.</p>
         <p>Keep the Makerfabs factory firmware. Pair <strong>one tag</strong> in AOA System over the anchor’s USB-NATIVE port and select JSON output (<code>USER_CMD 0</code>, then <code>SAVE</code>). Enter the received short tag ID above and apply settings. Wait for TAG LIVE before pressing X. Preview mode uses tag <strong>1234</strong>.</p>
         <p>Start at 5°/s with the tag 2–5 m ahead and slightly off center. Confirm the camera turns toward it; stop and reverse follow direction if it moves away. Use center offset for mounting alignment. Tag loss, leaving this window, or connection loss stops follow; reacquire and press X again. Readings must arrive at least every 300 ms. Keep the tag within ±55° and 0.75–20 m.</p>
       </div></details>

@@ -14,6 +14,15 @@
 #include "ManualControl.h"
 #include "TrackingCore.h"
 
+#ifndef RS5_UWB_WIRELESS
+#define RS5_UWB_WIRELESS 0
+#endif
+#if RS5_UWB_WIRELESS
+#include "../shared/EspNowLink.h"
+static wireless::Receiver radioReceiver;
+static uint32_t lastPollMs = 0;
+#endif
+
 #if !defined(CONFIG_IDF_TARGET_ESP32S3)
 #error "Select the Adafruit Feather ESP32-S3 No PSRAM board."
 #endif
@@ -30,13 +39,17 @@ static dji::JointAngles joint;
 static dji::StreamParser parser;
 static ManualControl motion;
 static tracking::Tracker tracker;
+#if !RS5_UWB_WIRELESS
 static uwb::StreamParser uwbParser;
+#endif
 static bool following = false, uwbConfigured = false, haveObservedTag = false;
 static int uwbDirection = 1, uwbZero = 0, uwbMaxSpeed = 50;
 static int16_t outputPan = 0, outputTilt = 0;
 static uint16_t observedTag = 0;
 static uint32_t uwbReports = 0, uwbBad = 0, observedMs = 0, lastLoopMs = 0;
+#if !RS5_UWB_WIRELESS
 static volatile bool uartError = false;
+#endif
 static uint32_t sessionToken = 0;
 static twai_status_info_t lastCanStatus = {};
 static uint32_t faultAlerts = 0;
@@ -147,7 +160,7 @@ static void status(uint32_t now) {
           "\"bus_errors\":%" PRIu32 ",\"rx_missed\":%" PRIu32 ",\"fifo_overrun\":%" PRIu32
           ",\"rec\":%" PRIu32 ",\"tec\":%" PRIu32 ",\"tx_failed\":%" PRIu32
           ",\"arbitration_lost\":%" PRIu32 ",\"fault_alerts\":%" PRIu32 ",\"bounded_retry\":true,"
-          "\"uwb\":{\"configured\":%s,\"tag\":%u,\"observed\":%s,\"observed_tag\":%u,"
+          "\"uwb\":{\"transport\":\"%s\",\"radio_ready\":%s,\"configured\":%s,\"tag\":%u,\"observed\":%s,\"observed_tag\":%u,"
           "\"fresh\":%s,\"following\":%s,\"bearing\":%.1f,\"range_m\":%.2f,"
           "\"age_ms\":%" PRIu32 ",\"reports\":%" PRIu32 ",\"bad\":%" PRIu32 ","
           "\"direction\":%d,\"zero\":%.1f,\"max_speed\":%.1f,\"reason\":\"%s\"}}\n",
@@ -157,6 +170,11 @@ static void status(uint32_t now) {
       outputPan/10.0f, outputTilt/10.0f, validReplies, canReady ? motion.reason() : faultReason,
       s.bus_error_count, s.rx_missed_count, s.rx_overrun_count, s.rx_error_counter, s.tx_error_counter,
       s.tx_failed_count, s.arb_lost_count, faultAlerts,
+#if RS5_UWB_WIRELESS
+      "esp-now", espnowLink::ready ? "true" : "false",
+#else
+      "uart", "false",
+#endif
       uwbConfigured ? "true" : "false", tracker.tag(),
       haveObservedTag && now - observedMs <= 300 ? "true" : "false", observedTag,
       tracker.fresh(now) ? "true" : "false", following ? "true" : "false",
@@ -167,7 +185,13 @@ static void status(uint32_t now) {
 static void help() {
   logLine("RS5 MANUAL CONTROL protocol=2 | CAN 1Mbit/s | TX=5 RX=6 | boots disarmed\n");
   logLine("probe | stop | idle | status | arm TOKEN CLOCK | drive TOKEN CLOCK SEQ PAN TILT\n");
-  logLine("UWB RX=38 115200 | uwb TOKEN CLOCK TAG SIGN ZERO MAX | track TOKEN CLOCK | follow TOKEN CLOCK SEQ\n");
+#if RS5_UWB_WIRELESS
+  logLine("UWB ESP-NOW | body mac=%s radio_ready=%d | channel=%u\n",
+      WiFi.macAddress().c_str(), espnowLink::ready, wirelessConfig::Channel);
+#else
+  logLine("UWB RX=38 115200\n");
+#endif
+  logLine("uwb TOKEN CLOCK TAG SIGN ZERO MAX | track TOKEN CLOCK | follow TOKEN CLOCK SEQ\n");
 }
 static bool unsignedValue(const char *text, uint32_t &out) {
   if (!text || !*text) return false;
@@ -258,6 +282,31 @@ static void invalidateUwb(const char *reason) {
   if (following) stopMotion(reason);
 }
 static void readUwb(uint32_t now, bool stalled) {
+#if RS5_UWB_WIRELESS
+  espnowLink::Message message; bool lost = false;
+  const bool available = espnowLink::take(message, lost);
+  if (stalled || lost) {
+    radioReceiver.cancel(); invalidateUwb("uwb_radio_overrun");
+  } else if (available) {
+    uwb::Measurement m; uint32_t sampleMs = 0;
+    const auto result = radioReceiver.accept(message.bytes, message.size, now, m, sampleMs);
+    if (result == wireless::Result::Restart) {
+      invalidateUwb("uwb_radio_restart"); tracker.reset();
+    } else if (result == wireless::Result::Invalid) invalidateUwb("uwb_radio_invalid");
+    else if (result == wireless::Result::Measurement) {
+      ++uwbReports; observedTag = m.tag; observedMs = sampleMs; haveObservedTag = true;
+      tracker.update(m, sampleMs);
+      if (following && !tracker.fresh(now)) stopMotion("uwb_lost");
+    }
+  }
+  if (espnowLink::ready && now - lastPollMs >= wireless::PollMs) {
+    uint8_t request[wireless::RequestSize];
+    radioReceiver.request(now, request); lastPollMs = now;
+    if (!espnowLink::send(request, sizeof(request))) {
+      radioReceiver.cancel(); invalidateUwb("uwb_radio_send");
+    }
+  }
+#else
   if (uartError || stalled || Serial1.available() > 512) {
     uartError = false;
     for (unsigned i = 0; i < 2048 && Serial1.available(); ++i) Serial1.read();
@@ -274,6 +323,7 @@ static void readUwb(uint32_t now, bool stalled) {
       if (following && !tracker.fresh(now)) stopMotion("uwb_lost");
     }
   }
+#endif
 }
 static void readCommands() {
   for (unsigned i = 0; i < 128 && Serial.available(); ++i) {
@@ -320,11 +370,16 @@ void setup() {
   gpio_set_pull_mode(CanTx, GPIO_PULLUP_ONLY);
   pinMode(static_cast<uint8_t>(CanRx), INPUT_PULLUP);
   Serial.begin(115200);
+#if RS5_UWB_WIRELESS
+  espnowLink::begin(false);
+  radioReceiver.begin(esp_random());
+#else
   Serial1.setRxBufferSize(1024);
   Serial1.begin(115200, SERIAL_8N1, 38, 39); // RX pad; TX/GPIO39 stays unconnected.
   Serial1.onReceiveError([](hardwareSerial_error_t error) {
     if (error != UART_NO_ERROR) uartError = true;
   });
+#endif
 #if ARDUINO_USB_CDC_ON_BOOT
   Serial.setTxTimeoutMs(0);
 #endif
@@ -349,7 +404,7 @@ void loop() {
   bool wasActive = motion.active();
   motion.tick(now, joint.yaw, joint.roll, joint.pitch, fresh(now), !!Serial);
   if (wasActive && !motion.active()) stopMotion(motion.reason(), true);
-  // Expire the old fix before accepting buffered UART reports.
+  // Expire the old fix before accepting buffered UART or wireless reports.
   if (following && !tracker.fresh(now)) stopMotion("uwb_lost");
   readUwb(now, stalled);
   if (!Serial) probing = queryPending = false;

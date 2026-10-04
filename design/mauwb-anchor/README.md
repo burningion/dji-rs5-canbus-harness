@@ -1,115 +1,102 @@
-# Camera-top Makerfabs UWB anchor case
+# Camera-top STM32 anchor + Feather enclosure — prototype G
 
-**Prototype E: rear wire exit and complete four-part print plate. Physical fit of this revision and RF performance have not been verified.** This is for the original Makerfabs STM32 AoA anchor in your overhead photo, with an upright dual-antenna module and PKCELL LP503035 3.7 V / 500 mAh battery. It is separate from the existing tag enclosure. Both signal wires now leave through one opening at the rear, opposite the antenna. This retains the two-hole cage mount and top-access lid screws. The user found that the antenna covers the front PCB mounting holes, so revision C's descending lid pillars struck it. This lid has no PCB locating pillars or pins. **PCB retention is incomplete: the base supports have only 3.1 mm-diameter, 1.2 mm-deep locating recesses, not screw mounts. A mistaken assumption that separate board fastening already existed must be corrected in the base and print plate before this is ready for assembly.**
+The camera unit now has a **mounted Adafruit Feather ESP32-S3 below the STM32 anchor and its upright antenna**. From bottom to top: the single 3.7 V / 500 mAh battery, insulating shield, Feather, then STM32. Direct soldered wires connect the boards internally; no cable crosses a moving gimbal axis. The stationary Feather/CAN unit remains on the RS5 body.
 
-![Assembled case, battery tray and exploded assembly](preview.png)
+The footprint remains **87.7 × 58 mm**. The main body is **41.1 mm high**, and total height including the antenna hood is **72.81 mm**. The two cage holes remain **26.48 mm apart**. These are CAD dimensions; physical fit and enclosed radio performance have not been validated.
 
-The case mounts directly on the **moving camera's cage**, with the antenna end toward the lens. Two screws pass down through the base into the cage's existing threads, **26.48 mm center-to-center, left-to-right**. The pair is centered on the antenna module at y=16.3 mm. The central hole, nut pocket and nut boss are removed. The body remains **87.7 × 58 × 26.7 mm**; overall height is **59.81 mm**. Battery size and installed antenna height use your measurements. The antenna front face now aligns with the 72 mm PCB front edge per your description; its rear face at x=68 mm is inferred from the approximate 4 mm module depth. The header envelope remains provisional.
+![Stack and Feather mounting](stack-preview.png)
 
-**[print-plate.stl](print-plate.stl) contains the current four parts, but still needs the PCB mounting correction described above.** It contains the base, cover, hood and shield in their print orientations, with a **91.2 × 190 mm footprint** before brim/skirt. Import in millimeters at **100% scale**. Gauges and the insert coupon are separate.
+## Board mounts and access
 
-Compared with revision D, the **base and cover** change: the old side wire openings and tie slots are closed, and a single **7 × 4 mm rear seam opening** serves both wires. The tie slots move next to it. The revision-D hood and existing shield can be reused if you prefer to print only the changed parts. All four PCB locating pillars remain removed; the antenna opening, cage mount and top-access screw pattern are unchanged.
+The **Feather uses two M2 × 6 mm screws at its USB end**, engaging heat-set inserts in the base, plus two front supports with **1.8 mm locating pins**. Adafruit's board CAD specifies 2.5 mm rear mounting holes and 2.2 mm front holes. The front pins avoid putting screw heads beside the ESP32 module/antenna. All four supports carry the PCB; the two rear screws retain it. Use a bare Feather with **no tall pin headers**, as confirmed by the user.
 
-![Complete print plate and rear wire exit](print-plate-preview.png)
+The **STM32 uses two M2 × 6 mm screws at its USB end and two front-edge keepers** built into the base. The keepers overlap the front PCB edge by **0.8 mm**, with **0.2 mm vertical clearance**, and remain below the upright antenna. The two front mounting holes rest on plain supports. No screws or lid pillars occupy those covered holes. To remove the STM32, unplug the relevant leads, remove its two rear screws, slide the board **1.5 mm toward USB**, then lift it with its antenna attached. Check that the delivered PCB has clear land at x=71.2…72 mm, y=8…12 and 22…26 mm; the modeled header ends at x=71 mm and remains provisional.
 
-![Lid underside and installed antenna placement](antenna-preview.png)
+The Feather underside is at **z=13.5 mm** and the STM32 underside at **z=26.5 mm**: **13 mm between boards**. The provisional 8 mm-high mated Feather battery plug clears the modeled STM32 underside components by **1.4 mm**. Feather solder joints have **1 mm clearance above the shield**. These clearances assume short direct wires, no header sockets, 1.6 mm PCBs and the documented component envelopes.
 
-![Top-access lid screws and base insert posts](closure-preview.png)
+A separate **12 × 7 mm USB-C access opening** exposes the Feather charger in the rear short wall. The connector face is approximately **2.56 mm behind the outer wall**, based on the vendor footprint. The opening is a trial cable-body allowance; check the actual plug and connector height. Both stock STM32 USB ports stay covered.
 
-![Open base and two-hole cage mounting pattern](mount-preview.png)
+## Exact rocker opening and charging
 
-Do not substitute the handle-side RSA/NATO mounting point used by the CAN adapter. That location does not maintain the camera-to-anchor orientation required by the current pan controller. Using it would require a different tracking coordinate transform. A bracket attached to the actual moving camera platform can work, provided it clears the gimbal through its travel.
+The same rear short wall has the requested **13.5 mm wide × 8.4 mm high rectangular opening** for the measured **13.27 × 8.18 mm KCD11-101 style switch body**. Total clearance is exactly **0.23 × 0.22 mm**. There is **no added fit allowance, corner radius or chamfer**. The wall is x=0 in the exported case and x=-3.7 mm in the source assembly.
+
+Its center is now **y=-2 mm, z=34.1 mm**. Raising it **14.4 mm from revision F** clears the higher STM32 and its screw heads, including vertical lid removal. The approximately **15 mm installed depth**, including terminals, has a **20 mm reserved corridor** with the measured body cross section. This corridor does not enlarge the opening. Flange, clips, terminal spread and bent leads remain unmeasured. The plastic above the opening is **2.8 mm** to the outer roof.
+
+Print [switch-coupon.stl](switch-coupon.stl) to check the exact aperture in a 1.8 mm wall. The lower opening visible in the preview is for the Feather USB-C charger.
+
+![Rear switch and USB openings](switch-preview.png)
+
+The rocker now sits **in the battery's positive lead, before the camera Feather's JST**. Feather BAT/GND then feeds the STM32 battery socket. Leave Feather EN externally unconnected. **Closed contacts = ON; open contacts = battery OFF.** No electronic load-switch board is required. See the [power circuit and servicing instructions](../../firmware/WIRELESS_UWB.md#camera-side-power-direct-battery-switch).
+
+**Charging through Feather USB-C requires the rocker ON.** The STM32 remains a load on BAT, so net charging current and proper charge termination still require measurement. OFF disconnects the cell from charging but does not isolate USB power. For an initial unloaded charging check, disconnect the anchor BAT pigtail and UART as described in the power guide. Keep the anchor USB ports disconnected. Unplug USB and the battery before internal service.
+
+The same 13.5 × 8.4 mm switch opening, 20 mm reserved corridor and board mounts apply. Check the actual battery-current harness, terminal insulation and lead slack against the case; flexible wires are not represented by the component-envelope checks.
 
 ## Files
 
-- [Editable OpenSCAD model](enclosure.scad): opens as an assembly; select `part="exploded"` to inspect the stack.
-- [Fit gauge](fit-gauge.stl): first print, 1.2 mm thick; checks carrier footprint and four mounting-hole centers.
-- [Cage mounting gauge](mount-gauge.stl): open frame with the case footprint and both cage holes. Its 2.4 mm screw seats and 9.3 mm-tall head collars match the base. For fit checking only, not supporting the loaded case. The revision-B gauge still checks the same cage pattern; its old lid-hole markers can be ignored.
-- [Base tray](base.stl), [display cover](cover.stl), [antenna hood](hood.stl), [battery shield](shield.stl).
-- [Four-part print plate](print-plate.stl): current base, cover, hood and shield; 91.2 × 190 mm footprint, print orientations already applied, units millimeters, scale 100%. [Plate/rear-exit preview](print-plate-preview.png).
-- [M3 insert coupon](insert-coupon.stl): five holes, 4.4 / 4.5 / 4.6 / 4.7 / 4.8 mm, ordered along the 65 mm length.
-- [Dimension provenance and assumptions](measurements.json), [mesh and interference checks](mesh-checks.json), [preview](preview.png).
-- [Rebuild/check script](../../tools/build_anchor_enclosure.py): `python3 tools/build_anchor_enclosure.py` from the repository root.
+- [Editable OpenSCAD model](enclosure.scad): assembly by default; `part="exploded"` separates the layers.
+- [Complete four-part print plate](print-plate.stl): **91.2 × 190 mm**, units mm, scale 100%.
+- [Base](base.stl), [cover](cover.stl), [hood](hood.stl), [shield](shield.stl). **Reprint all four for revision G**; the hood height changes with the taller roof.
+- [M2 board-insert coupon](board-insert-coupon.stl): 2.8 / 2.9 / 3.0 / 3.1 / 3.2 mm trial bores, ordered along the 48 mm length.
+- [M3 insert coupon](insert-coupon.stl): 4.4 / 4.5 / 4.6 / 4.7 / 4.8 mm bores along the 65 mm length.
+- [Switch fit coupon](switch-coupon.stl), [STM32 outline/hole gauge](fit-gauge.stl), [cage mounting gauge](mount-gauge.stl). Gauges/coupons are separate from the plate.
+- [Measurements and provenance](measurements.json), [mesh/interference report](mesh-checks.json), [assembly preview](preview.png).
+- [Build/check script](../../tools/build_anchor_enclosure.py): run `python3 tools/build_anchor_enclosure.py` from the repository root.
 
-## Layout and alignment
+![Print plate](print-plate-preview.png)
 
-The carrier lies flat, display upward. The battery sits below the display end in a noncompressing pocket. A separate 1.2 mm shield separates the pouch and cage screw heads from solder joints. The tray still supports the carrier at its four mounting holes. **There is currently no completed PCB fastening method.** The lid no longer locates or clamps the PCB, and the base retains the old shallow locating sockets. No screw size is specified for those sockets; the M3 hardware below belongs to the lid and hood. Four M3 screws close the body from above, engaging inserts in the base. The separately removable antenna hood uses two M3 screws, both below the antenna elements.
-
-In the source coordinate system, **+X points toward the lens**, Y is camera left/right, and +Z is up. The antenna's broad board face is perpendicular to the lens axis; the two antenna elements must be **side by side at the same height**, rather than one above the other. The upright PCB alone does not establish correct orientation: verify the actual element positions and sensing face. The recessed arrow on the cover is the intended forward direction.
-
-The hood has nominal **3 mm air clearance** around the module and 1.2 mm plain-plastic walls. It protects the module without pressing on its antenna faces. It does not clamp or straighten a loose header; the module must already be seated squarely. The battery ends at x=41 mm, away from the antenna envelope at x=68…72 mm. These are mechanical layout choices, not a manufacturer-specified RF keep-out or a claim that the radome is RF neutral.
-
-Use plain unfilled PETG for working parts, with no conductive/carbon/metal filler. Before enabling follow, compare the bare and enclosed anchor: put the tag centered in the lens view, check near-zero bearing, then move it left/right and verify the expected sign. Seat both cage screws, check the forward arrow against the lens, then tighten evenly. Apply any small residual zero offset through the existing calibration workflow. Check again after remounting. Centering the antenna over the hole pair aligns it with the lens only if that pair is itself centered on the lens; this has not been measured. Keep the antenna pair above camera/cage metal and rebalance the gimbal with the case and cables installed. The one-angle tracking controller assumes an approximately level camera; this enclosure does not add tilt tracking.
-
-## Measurements still needed before the full print
-
-The photo is useful for identifying parts and routing, but perspective cannot supply reliable Z dimensions. All defaults are editable. The current design uses:
-
-| Feature | Current CAD value | Basis / check |
-| --- | --- | --- |
-| Carrier PCB | 72 × 32.6 mm | Vendor V1.1 Eagle outline; compare against the delivered anchor revision |
-| Four 3 mm mounting holes | (2,2), (2,30.6), (70,2), (70,30.6) mm | Vendor carrier CAD |
-| Radio module | 33 wide × 36 tall × 4 deep mm | User width and approximate lower thickness; 36 mm module height from manual |
-| Radio front / rear face | x=72 / 68 mm from the USB-end PCB edge | Front flush with PCB per user; rear inferred from approximate 4 mm depth |
-| Installed radio top | 42.11 mm above carrier underside | **User measured**; derived module bottom is 6.11 mm above carrier underside |
-| Header body | x=66.8…71 mm, y=0.3…32.3 mm, 8 mm high | **Provisional** relative placement, shifted with module; measure independently |
-| Battery | 35.5 × 29 × 4.65 mm | **User measured**; cavity adds clearance around this envelope |
-| Battery clearances | 1 mm each side; 1.85 mm vertical allowance | Includes a 0.3 mm bottom pad; original 6.5 mm deck height retained for body height and hood/shield compatibility; do not compress the pouch |
-| Cage hole spacing | 26.48 mm center-to-center along Y | User measured and confirmed left-to-right |
-| Cage opening | Approximately 5.16 mm | User measured; does not identify thread or screw shaft diameter |
-| Fitting screw | Approximately 6.23 mm shaft; 9.38 mm head diameter × 6.23 mm high | User measured an existing screw that fits the cage |
-| Printed mounting holes | 6.8 mm smooth clearance | Adds 0.57 mm diametral clearance to the measured shaft |
-| Screw-head recesses | 10.2 mm diameter × 6.9 mm deep | 2.4 mm floor beneath each head; 0.67 mm clearance to shield above the measured head |
-| Lid closure | Four top-access M3 × 8 countersunk screws | 9.4 mm base posts; 4.6 mm trial insert bores; 2.8 mm lid seats |
-| PCB thickness / underside / top space | 1.6 / 3 / 10 mm | Provisional; top includes plugged battery connector and relaxed lead bend |
-
-Trial-fit the new cover and hood against the assembled antenna before installing the hood inserts. The CAD interprets “flush with the front of the board” as the antenna's outer face lying at x=72 mm; its approximately 4 mm-deep body occupies x=68…72 mm. Confirm that interpretation and whether the widest section is centered across the carrier. The opening provides x=65…75 mm clearance around that envelope. Use the measured cell envelope including tape/protection, and verify connector reach with the slack stored in the USB/BAT-end side channel. Do not fold the cell or put the lead under a screw boss. The model contains parameter guards; a significantly different antenna position can require changing the hood/opening geometry, not merely moving a reference object. Do not scale the whole STL.
-
-Also check the cage contact surface, lens clearance, camera controls, and the gimbal's complete swept clearance. The two cage-hole centers are **(57, 3.06) and (57, 29.54) mm** in the source coordinates. `mount_x` and `mount_y` move the pair together; `mount_pitch` sets their separation. These coordinates keep both heads outside the battery pocket. A different placement requires rerunning the collision checks.
-
-The cage screws are beneath the shield and PCB, so fit them **before installing the electronics**. The lid then lowers onto the mounted base and fastens entirely from above. Its screw centers are **(8,-6.2), (45,-6.2), (22,38) and (45,38) mm**. The asymmetric positive-Y rear post clears the tall battery connector. No lid screw, insert or driver needs access from beneath the cage. The CAD checks an 8 mm straight driver shaft above each lid screw, samples vertical removal with the hood attached, and continuously sweeps the rectangular antenna/header envelopes through the lid over 60 mm of vertical travel. The actual cage/accessories and loose cable routing still need a physical fit check.
-
-## Hardware and printing
+## Hardware
 
 | Quantity | Hardware |
 | --- | --- |
-| 6 | M3 × 4 × 5 mm heat-set inserts: four in the new base, two in the new cover's hood mounts |
-| 4 | Existing M3 × 8 mm 90-degree countersunk screws, now inserted from the TOP of the cover |
-| 2 | M3 × 8 mm button/pan-head screws, for the hood |
-| 2 | Existing screws matching the cage threads, with measured shaft/head dimensions and suitable length |
-| Unresolved | PCB mounting hardware: current supports are not screw mounts; base redesign required |
-| As needed | Thin soft pad, small cable ties, optional 0.5 mm clear PET for the display window |
+| 4 | M2 × 6 mm pan-head screws: two per board; modeled head up to 4 mm diameter × 1.6 mm high |
+| 4 | M2 heat-set inserts, 3 mm long, approximately 3.2 mm outside diameter; validate with coupon |
+| 6 | M3 × 4 × 5 mm heat-set inserts: four in base, two in cover for hood |
+| 4 | Existing M3 × 8 mm 90° countersunk lid screws, inserted from above |
+| 2 | M3 × 8 mm pan/button-head hood screws |
+| 2 | Existing screws matching the camera cage threads, with suitable engagement length |
+| As needed | Thin battery pad, insulated direct wires, optional 0.5 mm PET display window |
 
-The insert pockets are a **4.6 mm trial diameter**, 5 mm deep, with smaller clearance bores continuing beyond them for the screw tips. The four base posts are 9.4 mm in diameter and end at z=23.7 mm, 0.2 mm beneath the thickened lid seats. The hood mounts retain their 10 mm bosses. With the modeled 8 mm lid screws, the full 4 mm insert length is engaged and the screw tip has 1.2 mm clearance to the bottom of the core bore. Test the coupon in the intended filament; it is not a supplier-guaranteed fit. Install inserts with electronics removed. The cage mount has smooth through-holes and flat screw-head seats; the threads are in the metal cage. No nut or shoe adapter is used. Hardware is not included in the STL.
+M2 pockets are a **3.0 mm trial diameter**, **3.8 mm deep**, with a **2.2 mm core continuing another 1 mm**. The M2 screw tip clears the core bottom by 0.4 mm with the assumed 1.6 mm PCB. The 5 mm-diameter posts support the board around its holes. Verify the selected inserts and screw heads before printing the full base; insert dimensions vary.
 
-The mount uses your measured **6.23 mm shaft** and **9.38 mm diameter × 6.23 mm-high head**. The 6.8 mm bore adds 0.57 mm diametral clearance; the 10.2 mm recess adds 0.82 mm around the head diameter. Each flat head seat is recessed 0.4 mm into the 2.8 mm floor, leaving **2.4 mm of plastic beneath the head**. The head sits completely inside its collar, with **0.67 mm clearance below the shield**. The cage-facing underside stays flat. Test these printed clearances with your screw using the mounting gauge; the measurements are approximate. These seats require flat-bottomed heads. No washer allowance is included in the measured screw envelope.
+Use a precision screwdriver with a shaft no wider than the modeled **4 mm** for the board screws. Remove the STM32 before accessing the Feather screws. The lid screws use a separate 8 mm shaft clearance check.
 
-The screw seat is **2.4 mm above the cage contact face**. For a flat-under-head screw without a washer, protrusion into the cage equals its under-head length minus 2.4 mm. Measure available cage depth and check thread engagement; do not let the screw bottom out or contact the camera. The base needs a flat supporting cage surface around both holes. Tighten only enough to seat it without deforming the printed floor.
+M3 insert pockets retain the **4.6 mm trial diameter** and **5 mm depth**, with a 3.4 mm screw core continuing 1.2 mm. Base closure posts are 9.4 mm in diameter and end at **z=38.1 mm**, 0.2 mm below the lid seats. Screw centers are **(22,-6.2), (45,-6.2), (22,38), (45,38) mm**. Four M3 × 8 countersunk screws engage the full 4 mm insert length. No underside access is needed to open the case.
 
-Start with a 0.4 mm nozzle, 0.2 mm layers and four perimeters. Print the shield solid. Base prints flat; cover prints roof-down; hood prints open-end-down, with a 10 mm roof bridge. Inspect the slicer for the hood bridge, countersinks and display-lens recess. A brim may help the tall narrow hood. These orientations are intended to avoid supports, but are not printer-tested. PLA is suitable for the initial gauge. The enclosure is not sealed against weather.
+## Camera mounting and alignment
 
-## Assembly and battery access
+Mount on the **moving camera or cage**, with +X toward the lens, Y across the camera, and +Z upward. Do not use the stationary handle-side CAN adapter mount for the anchor: it would not preserve the camera-to-anchor orientation needed by this controller. The recessed arrow points toward the lens. The two antenna elements must remain **side by side and level**, with their broad face looking forward.
 
-**This sequence remains provisional until PCB mounts are designed and checked. The current print plate does not complete board retention.**
+The cage holes are **(57,3.06) and (57,29.54) mm** in assembly coordinates. They have **6.8 mm smooth bores**, **10.2 mm head recesses**, and **2.4 mm flat seats** above the cage-facing underside. These fit the user's approximate **6.23 mm shaft / 9.38 mm head diameter / 6.23 mm head height** envelope. The shield remains at z=9.3 mm, giving **0.67 mm head clearance**. The gauge checks these seats and hole spacing, not the strength of the loaded assembly.
 
-1. If cage fit is not already checked, print the cage mounting gauge and check both cage screws, contact face and lens alignment. The separate carrier fit gauge checks the unpowered PCB footprint/hole pattern. Neither gauge validates module offset, height or battery fit.
-2. Print the full revision-E plate, or just its **base and cover** if reusing the revision-D hood and shield. Trial-fit the parts empty. Install **four inserts downward into the new base posts** and **two into the cover's hood mounts**, with electronics removed, and let them cool fully. Prethread a small cable tie through the two rear slots before mounting the base; its band goes in the 1 mm-deep underside recess and its locking head stays inside the case.
-3. Fasten the empty tray to the cage with both screw heads inside their recesses. Fit the thin pad and battery without compression; route its lead through the shield/cradle notch toward BAT. Fit the revised shield over the cradle and both mounting bosses. Check that it sits flat without contacting either screw head.
-4. **Assembly is incomplete at PCB attachment.** The four supports carry the board but cannot secure it with the specified hardware. Revise the mounts and validate PCB fasteners and antenna clearance before proceeding. The antenna covers the front PCB holes when installed, so the final fastening method must account for that access restriction.
-5. Route both signal wires around the battery/PCB to the **rear (USB/display end, opposite the antenna)**. Pass them together through the **single 7 × 4 mm opening** at the base seam. Secure the insulated bundle or sleeve with the prethreaded rear tie, leaving slack at the solder joints. Check the tie band sits entirely inside the underside recess so the base can seat flat on the cage. Keep wires off the battery pouch, away from screws and out of the rest of the lid joint; leave a relaxed service loop to the gimbal.
-6. Lower the cover vertically around the installed antenna. There are **no PCB pillars or pegs projecting from this lid**. Close with four M3 × 8 countersunk screws from **above**, through the lid into the base inserts. The case faces must meet without using screw force to correct fit.
-7. Lower the hood over the module and fasten its two M3 × 8 pan/button-head screws. Verify there is no contact with the antenna faces. An optional PET window can be bonded in the shallow OLED recess; the opening is otherwise exposed.
-8. Check alignment, rebalance, then check cable clearance and bearing response before tracking.
+For a flat-under-head cage screw without a washer, protrusion below the case equals under-head length minus **2.4 mm**. Check cage thread depth and engagement; the thread designation remains unknown. The cage must support the base around both holes. Do not use screw force to pull an uneven case flat. The screw heads are beneath the shield and electronics, so fasten the empty base first.
 
-For battery removal, keep the camera stable and upright and remove the four lid screws from **above** while supporting the cover. The base stays fastened to the cage. Lift the cover and attached hood vertically without snagging the upright radio. **The current model does not secure the PCB; support it while the lid is removed.** Unplug BAT by its housing. If access requires lifting the PCB, detach the antenna as needed to reach the covered front mounting screws, release the PCB fasteners and support the board; move it only as far as the tied signal leads allow. Lift the shield and remove the cell. To remove the base from the cage, first clear the PCB and shield to expose the two cage screw heads. There is no added power switch in this version.
+The radio front face stays flush with the 72 mm carrier edge: the approximate 4 mm-thick module occupies x=68…72 mm. Its top is user-measured **42.11 mm above the STM32 underside**. The hood leaves nominal **3 mm air clearance**, with **1.2 mm plain-plastic walls**. The header envelope is provisional; verify it and the new keepers against the actual board.
 
-The default cover blocks both USB ports because the carrier's source schematic uses a TP4056 with a 1.2 kOhm programming resistor (about 1 A), while the PKCELL cell specification gives a **500 mA maximum charge current**. Charge the pack externally with a compatible 1S charger; do not connect USB while this battery is plugged into an unmodified board. For bench USB access, disconnect/remove the battery and open the case. This carries forward the documented carrier charging limitation, rather than assuming the actual board has been modified. Verify BAT/pack polarity independently; matching plugs do not prove it.
+The Feather antenna is below the STM32 board in this layout. **Mechanical clearance is not an RF keep-out validation.** Check ESP-NOW reception over full gimbal travel and compare bare/enclosed UWB bearing before relying on the stack. Keep the UWB antenna pair above cage metal. Check zero bearing with the tag centered in the lens, then verify left/right sign. Rebalance for the taller enclosure and confirm clearance through the entire gimbal movement. Alignment to the cage-hole midpoint does not prove alignment to the lens; that offset has not been measured. The current one-angle controller still assumes an approximately level camera.
+
+## Printing and assembly
+
+Use plain unfilled PETG for the working parts; avoid conductive/carbon/metal fillers around the antennas. Start with a 0.4 mm nozzle, 0.2 mm layers and four perimeters. Print the shield solid. Base prints flat, cover roof-down, hood open-end-down and shield flat. Inspect the approximately **1.1 mm front-keeper overhangs**, hood roof bridge, countersinks and window recess in the slicer. These orientations are not printer-tested; the enclosure is not weather-sealed.
+
+1. Check cage fit with the mounting gauge if not already verified. Print the M2/M3 insert and switch coupons before the full set. Check the actual Feather board revision, mounting holes and USB plug against the source dimensions.
+2. Print all four revision-G parts. Trial-fit them empty. Install four M2 inserts in the two Feather and two STM32 rear posts; install four M3 inserts in the lid posts and two in the cover's hood mounts. Let them cool with electronics removed.
+3. Fasten the empty base to the cage. Add the thin pad and battery without compressing the pouch. Route its lead through the cradle/shield notch. Lower the shield over all posts; its new openings clear the Feather supports. Check both cage heads remain below it.
+4. Lower the Feather onto its four supports with USB toward the rear opening. Engage its two front locating pins and install the two rear M2 screws. The board must sit flat. Fit the switched battery harness with the cell unplugged, then connect Feather BAT/GND to the anchor battery pigtail and route the UART lead before the STM32 blocks access.
+5. Hold the STM32 level, slightly rearward, with its front edge beneath the two keepers. Slide it forward 1.5 mm to align the rear holes, then install its two M2 screws. Check the keepers overlap only clear PCB edge and touch neither header nor antenna. No fasteners enter the covered front holes. Keep wire slack clear of the Feather antenna and solder joints.
+6. Fit the rocker in series with the battery harness positive lead; keep the negative lead continuous and leave Feather EN unconnected. Insulate both terminals, which now carry battery current. Leave enough flexible lead to support and unplug the cover. Check the approximate 15 mm installed depth, flange and clips physically. No loose lead may cross a screw boss or press on the battery.
+7. Lower the cover vertically around the antenna. Close its four M3 screws from above without forcing the joint. Fit the hood with its two M3 screws. Check USB plug reach and switch action. An optional 0.5 mm PET window can be bonded into the OLED recess.
+8. Verify power-off/charging behavior, wireless link loss handling, alignment and balance before tracking.
+
+For service, remove the four lid screws and lift the cover/hood vertically while supporting the switch lead. Unplug all USB cables and the battery; the battery-side rocker terminal stays live when OFF. Release the two STM32 screws, slide the board rearward **1.5 mm**, then lift it, supporting or unplugging its leads. Its antenna can remain installed within the modeled envelopes. Remove the two Feather screws and lift it vertically off the front pins. The shield and battery can then be removed while the base stays on the cage. Remove both boards and shield to reach the cage screws.
 
 ## Evidence and validation limits
 
-- [Makerfabs original STM32 AoA kit](https://www.makerfabs.com/mauwb-stm32-aoa-development-kit.html): anchor/tag identification and original hardware.
-- [Pinned Makerfabs hardware repository](https://github.com/Makerfabs/UWB-AOA-with-Display-STM32F103C8T6/tree/34b9705edcb7feca83f652280047847d4bc03c34/Hardware): V1.1 carrier outline, mounting holes, display, connectors and charge circuit. Its U2 library footprint describes a flat tag module, so **it is not used as the anchor's installed 3D envelope**.
-- [X3 module manual, page 3](https://github.com/Makerfabs/UWB-AOA-with-Display-STM32F103C8T6/tree/34b9705edcb7feca83f652280047847d4bc03c34/Doc): X3-AOA (CA) 33 × 36 × 3.5 mm listing and images of the dual element layout.
-- [PKCELL LP503035 specification](https://www.batterypkcell.com/uploads/LP503035-500mAh-3.7V.pdf): cell identity and charging limit.
+- [Adafruit Feather ESP32-S3 PCB CAD](https://github.com/adafruit/Adafruit-Feather-ESP32-S3-PCB/blob/main/Adafruit%20ESP32-S3%208MB%20No%20PSRAM.brd): **50.8 × 22.86 mm outline**, 2.54 mm corner radii, rear hole centers (2.54,2.54)/(2.54,20.32), front centers (48.26,1.8415)/(48.26,20.955); USB/JST/module XY footprints. Read 2026-10-04; downloaded-file SHA-256 recorded in measurements. Component heights are provisional.
+- [Pinned Makerfabs carrier CAD](https://github.com/Makerfabs/UWB-AOA-with-Display-STM32F103C8T6/tree/34b9705edcb7feca83f652280047847d4bc03c34/Hardware): **72 × 32.6 mm PCB**, 3 mm holes at (2,2), (2,30.6), (70,2), (70,30.6), display and connector XY. Compare against the delivered revision. Its flat tag footprint is not used for the anchor's upright radio envelope.
+- [X3 module manual](https://github.com/Makerfabs/UWB-AOA-with-Display-STM32F103C8T6/tree/34b9705edcb7feca83f652280047847d4bc03c34/Doc): 33 × 36 × 3.5 mm module listing; user supplied 33 mm width, approximate 4 mm lower depth, flush-front position and 42.11 mm installed height.
+- Battery packed dimensions **35.5 × 29 × 4.65 mm** are user measured. The cradle adds 1 mm per side, with a 0.3 mm pad and 1.85 mm total vertical allowance under the shield. [PKCELL LP503035 specification](https://www.batterypkcell.com/uploads/LP503035-500mAh-3.7V.pdf) identifies the electrical cell limits; protection and connector polarity still require confirmation.
 
-The build checks each printable STL for finite triangles, two faces per edge, expected connected-component count and positive volume. It verifies that the four parts on the print plate match the current individual exports (within 0.002 mm export rounding tolerance), rather than merely counting four components. Mesh probes check the rear opening, closed former side openings, relocated tie slots and remaining floor above the tie recess. A 3 mm trial wire-bundle envelope is checked through the rear wall and base lip; actual wire size and loose internal routing are not modeled. OpenSCAD intersections check the printed parts against one another and against simplified component envelopes; the vertically separated base/hood pair is checked by its bounds. Separate intersections check the six M3 screws and two measured cage screw envelopes against both plastic and electronics. Mesh probes verify the cage openings, closed former center hole, four top-facing lid countersinks, and closed base floor at both old and new closure positions. A separate intersection checks a 2.5 mm driver bit at each screw head and an 8 mm driver shaft for 70 mm above the lid. Lid/hood removal is checked at upward offsets of 0.2, 1.6, 10, 30 and 60 mm against the base, shield and electronics. Those checks use sampled positions. An additional exact vertical sweep of the **rectangular radio and header envelopes** covers the full 60 mm insertion/removal travel through the lid and hood. Exported mesh bounds also confirm that all four former PCB pillar/pin volumes are empty below the lid roof. Heat-set insert knurls are excluded because their interference with softened plastic is intentional. PCB fasteners are absent from the design and checks: passing mesh/interference checks does not validate PCB retention. These checks do not establish actual screw fit, cage contact or physical tool access, structural strength, gimbal balance, antenna calibration, RF transparency, waterproofing, charge compatibility or battery runtime. The radio position follows the user's flush-front description and approximate thickness, rather than a new caliper offset. Header shape and other unmeasured component clearances remain provisional; PCB mounting still needs to be designed.
+The build verifies closed printable meshes, expected component counts, positive volume and agreement between the plate and individual parts within 0.002 mm export rounding. Mesh probes inspect cage holes/seats, lid countersinks, blind base floors, board insert openings, Feather locating pins, STM32 keepers and both faces of the new USB aperture. The rocker check inspects exact corners and ±0.01 mm around every edge on both wall faces, without adding tolerance to its geometry.
+
+OpenSCAD checks printed-part, component and fastener interference, including the Feather and four M2 board screws. Separate checks cover the 20 mm switch corridor, trial USB plug corridor, lid-driver access, sampled lid removal, continuous vertical radio/header sweep, and sampled STM32 slide/lift and Feather lift paths. Mating faces may yield numerical zero-volume intersections. Board service paths are sampled, not a full swept scan. Actual flange/clips/terminals, flexible wiring, insert knurls, camera/cage surfaces and manufacturing variation are excluded. Passing checks does not establish real retention strength, print fit, RF performance, thermal performance, balance, charging compatibility or runtime.
