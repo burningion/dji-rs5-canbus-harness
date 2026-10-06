@@ -1,6 +1,6 @@
 {
   "prototype": true,
-  "revision": "C (M3 heat-set inserts)",
+  "revision": "D (same rocker aperture as camera anchor)",
   "hardware_fit_verified": false,
   "component_heights": "provisional; measure actual board and mated BAT plug",
   "outer_dimensions_mm": [
@@ -32,15 +32,41 @@
     ]
   },
   "battery_to_radio_envelope_x_gap_mm": 8.5,
+  "switch": {
+    "enabled": true,
+    "wall": "BAT-connector long side (+Y), in front shell",
+    "opening_width_height_mm": [
+      13.5,
+      8.4
+    ],
+    "measured_body_width_height_mm": [
+      13.27,
+      8.18
+    ],
+    "center_x_z_assembly_mm": [
+      48.0,
+      19.0
+    ],
+    "wall_thickness_mm": 1.6,
+    "installed_depth_including_terminals_approx_mm": 15.0,
+    "reserved_depth_from_outer_wall_mm": 20.0,
+    "outer_top_bridge_mm": 2.75,
+    "aperture_checked_on_both_wall_and_coupon_faces": true,
+    "print_plate_aperture_checked": true,
+    "matches_anchor_aperture": true,
+    "physical_fit_verified": false,
+    "excluded_from_clearance_model": "Actual flange/clips, terminal spread and flexible wire bends"
+  },
   "volumetric_intersections_mm3": {
     "collision": 6.679101716144942e-13,
-    "case_collision": 3.789561257387201e-13
+    "case_collision": 3.789561257387201e-13,
+    "switch_space_collision": 0.0
   },
   "contact_note": "Zero-volume PCB support and mating-face contacts are intentional.",
   "meshes": [
     {
       "file": "design/mauwb-tag/front.stl",
-      "triangles": 4136,
+      "triangles": 4156,
       "closed": true,
       "components": 1,
       "bounds_mm": [
@@ -48,7 +74,7 @@
         54.3,
         23.15
       ],
-      "volume_mm3": 19149.965
+      "volume_mm3": 18968.526
     },
     {
       "file": "design/mauwb-tag/rear.stl",
@@ -76,7 +102,7 @@
     },
     {
       "file": "design/mauwb-tag/print-plate.stl",
-      "triangles": 7948,
+      "triangles": 7968,
       "closed": true,
       "components": 3,
       "bounds_mm": [
@@ -84,7 +110,7 @@
         95.3,
         23.15
       ],
-      "volume_mm3": 35803.685
+      "volume_mm3": 35622.246
     },
     {
       "file": "design/mauwb-tag/fit-gauge.stl",
@@ -109,6 +135,18 @@
         9.6
       ],
       "volume_mm3": 4903.78
+    },
+    {
+      "file": "design/mauwb-tag/switch-coupon.stl",
+      "triangles": 32,
+      "closed": true,
+      "components": 1,
+      "bounds_mm": [
+        23.5,
+        18.4,
+        1.6
+      ],
+      "volume_mm3": 510.4
     }
   ]
 }

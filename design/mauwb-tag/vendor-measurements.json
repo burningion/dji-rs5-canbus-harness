@@ -63,6 +63,17 @@
     "manufacturer_hole_spec_found": false,
     "physical_fit_verified": false
   },
+  "selected_switch": {
+    "source": "User-measured KCD11-101 style rocker already used in camera anchor design",
+    "anchor_reference": "../mauwb-anchor/enclosure.scad",
+    "measured_body_width_height_mm": [13.27, 8.18],
+    "exact_opening_width_height_mm": [13.5, 8.4],
+    "approximate_installed_depth_including_terminals_mm": 15,
+    "tag_reserved_depth_from_outer_wall_mm": 20,
+    "tag_panel_thickness_mm": 1.6,
+    "flange_clips_and_wire_bends_measured": false,
+    "physical_fit_verified": false
+  },
   "selected_battery": {
     "reference": "Adafruit 1578",
     "url": "https://www.adafruit.com/product/1578",

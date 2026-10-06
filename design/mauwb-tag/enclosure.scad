@@ -1,4 +1,4 @@
-/* Makerfabs original STM32 AoA TAG pocket enclosure, prototype rev C (M3 inserts), mm.
+/* Makerfabs original STM32 AoA TAG pocket enclosure, prototype rev D (rocker opening), mm.
  * Board XY from vendor V1.1 Eagle file, commit 34b9705edcb7feca83f652280047847d4bc03c34.
  * U2 footprint is an envelope, not a verified 3D model of the shipped X3-MAX.
  * Component Z heights, plugged battery connector and print fit need measurement.
@@ -9,7 +9,7 @@
  */
 
 /* [Output] */
-part = "print_plate"; // [print_plate,front,rear,shield,fit_gauge,insert_coupon,assembly,exploded,electronics,collision,case_collision,pcb,battery,radio]
+part = "print_plate"; // [print_plate,front,rear,shield,fit_gauge,insert_coupon,switch_coupon,assembly,exploded,electronics,collision,case_collision,switch_space,switch_space_collision,pcb,battery,radio]
 show_references = true;
 
 /* [Board - vendor XY, provisional Z] */
@@ -74,6 +74,18 @@ button_holes = true;
 button_hole_diameter = 2.4;
 lanyard_holes = true; // Soft cord holes in rear plate, outside battery/RF footprint.
 
+/* [Same KCD11-101 style rocker opening as camera anchor] */
+switch_opening = true;
+switch_width = 13.5; // Along X on the BAT-connector (+Y) side; no extra fit allowance.
+switch_height = 8.4; // Along Z; sharp rectangular opening, no chamfer.
+switch_body_width = 13.27; // User-measured body, shared with anchor design.
+switch_body_height = 8.18;
+switch_x = 48;
+switch_z = 19; // Above PCB; below roof, with 2.75 mm to the outside top.
+switch_installed_depth = 15; // Approximate user measurement including terminals.
+switch_space_depth = 20; // Reserved inward from OUTER wall, not measured body depth.
+// Flange, clips, terminal spread and flexible wire bends still need a physical fit.
+
 /* [Fasteners] */
 // Four M3 x 8 mm screws into M3 x 4 x 5 mm heat-set inserts.
 // Default 90-degree countersink accepts heads up to 6.72 mm (ISO 10642).
@@ -113,6 +125,14 @@ insert_dimensions_valid = insert_hole_diameter > case_screw_clearance
     && 2*insert_outer_diameter <= case_boss_diameter
     && insert_length > 0
     && insert_length+insert_bottom_clearance <= case_boss_height-0.7;
+switch_dimensions_valid = switch_width == 13.5 && switch_height == 8.4
+    && switch_body_width < switch_width && switch_body_height < switch_height
+    && switch_space_depth >= switch_installed_depth
+    && switch_x-switch_width/2 > case_x_min+corner_radius
+    && switch_x+switch_width/2 < case_x_max-corner_radius
+    && switch_z-switch_body_height/2 > pcb_top+0.5
+    && switch_z-switch_height/2 > rear_thickness+case_boss_height
+    && switch_z+switch_height/2 < case_height-front_thickness;
 
 echo("PROTOTYPE: verify component heights / plugged BAT connector before final print.");
 echo("Outer case L/W/H (mm)", case_length, case_width, case_height);
@@ -121,6 +141,7 @@ echo("Battery ends at X; radio envelope begins at X", battery_x+battery_length, 
 echo("USB openings", usb_openings, "Stock ~1A charging is unsuitable for proposed 500mAh cell.");
 echo("Fasteners: four M3 x 8 mm; seat", case_screw_seat);
 echo("Heat-set inserts enabled", use_heat_set_inserts);
+echo("Switch opening W/H, center X/Z (mm)",switch_width,switch_height,switch_x,switch_z);
 
 module rr2(x,y,w,h,r) {
     hull() for (px=[x+r,x+w-r], py=[y+r,y+h-r])
@@ -161,6 +182,20 @@ module front_outer() {
         translate([0,0,case_height-edge_bevel-eps]) linear_extrude(eps) outline();
         translate([0,0,case_height-eps]) linear_extrude(eps) outline(edge_bevel);
     }
+}
+
+module switch_cutout() {
+    if (switch_opening)
+        translate([switch_x-switch_width/2,case_y_max-wall-eps,switch_z-switch_height/2])
+            cube([switch_width,wall+2*eps,switch_height]);
+}
+
+module switch_space_reference() {
+    // Clearance corridor only: the actual switch/flange is not a supplied 3D model.
+    if (switch_opening)
+        translate([switch_x-switch_body_width/2,case_y_max-switch_space_depth,
+                   switch_z-switch_body_height/2])
+            cube([switch_body_width,switch_space_depth,switch_body_height]);
 }
 
 module front_shell() {
@@ -212,6 +247,7 @@ module front_shell() {
         if (button_holes) for (cx=[42.4688,47.2186])
             translate([cx,21.9136,case_height-front_thickness-eps])
                 cylinder(d=button_hole_diameter,h=front_thickness+2*eps);
+        switch_cutout();
     }
 }
 
@@ -360,14 +396,25 @@ module print_front() {
 module print_rear() { translate([-case_x_min,-case_y_min,0]) rear_cover(); }
 module print_shield() { translate([-cradle_x,-cradle_y,-shield_z]) battery_shield(); }
 
+module switch_coupon() {
+    // Match the tag's 1.6 mm wall, with the anchor's exact 13.5 x 8.4 aperture.
+    difference() {
+        cube([switch_width+10,switch_height+10,wall]);
+        translate([5,5,-eps]) cube([switch_width,switch_height,wall+2*eps]);
+    }
+}
+
 // Fail closed on unknown/oversize inserts instead of exporting a guess.
 if (use_heat_set_inserts && !insert_dimensions_valid)
     echo("ERROR: Enter supplier insert hole/outer diameters and length. Boss diameter must be >=2x insert OD; pocket must leave >=0.7 mm blind end wall.");
+else if (switch_opening && !switch_dimensions_valid)
+    echo("ERROR: Switch must retain the exact anchor aperture and clear the PCB, roof, bosses and rounded corners.");
 else if (part == "front") print_front();
 else if (part == "rear") print_rear();
 else if (part == "shield") print_shield();
 else if (part == "fit_gauge") translate([1,1,0]) fit_gauge();
 else if (part == "insert_coupon") insert_coupon();
+else if (part == "switch_coupon") switch_coupon();
 else if (part == "print_plate") {
     print_front();
     translate([case_length+8,0,0]) print_rear();
@@ -381,12 +428,18 @@ else if (part == "assembly" || part == "exploded") {
     if (show_references) {
         translate([0,0,18*explode]) electronics(false);
         color([0.68,0.69,0.71]) battery_reference();
+        color([0.9,0.55,0.15,0.4]) translate([0,0,52*explode]) switch_space_reference();
     }
 }
 else if (part == "electronics") electronics();
 else if (part == "pcb") pcb_reference();
 else if (part == "battery") battery_reference();
 else if (part == "radio") radio_reference();
+else if (part == "switch_space") switch_space_reference();
+else if (part == "switch_space_collision") intersection() {
+    union() { front_shell(); rear_cover(); battery_shield(); electronics(); }
+    switch_space_reference();
+}
 else if (part == "collision") intersection() {
     union() { front_shell(); rear_cover(); battery_shield(); }
     electronics();

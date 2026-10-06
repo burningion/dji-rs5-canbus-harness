@@ -1,6 +1,6 @@
 # Pocket case for the Makerfabs STM32 AoA tag
 
-Prototype rev C (M3 heat-set inserts) for the **original MaUWB STM32 AoA kit's TAG**, with its display and **no expansion header strips fitted**. The anchor has a different radio shape and does not fit this case.
+Prototype rev D (M3 heat-set inserts and rocker opening) for the **original MaUWB STM32 AoA kit's TAG**, with its display and **no expansion header strips fitted**. The anchor has a different radio shape and does not fit this case.
 
 User choices: smallest practical case, roughly **1–2 hours** of use, a **removable battery charged externally**, and no modification to the tag's PCB. The runtime target still needs a current measurement and a discharge test.
 
@@ -8,7 +8,7 @@ User choices: smallest practical case, roughly **1–2 hours** of use, a **remov
 
 ## Proposed specification
 
-| Item | Rev C specification |
+| Item | Rev D specification |
 | --- | --- |
 | Outside dimensions | **89.7 × 54.3 × 25.95 mm**, including all three printed parts; height is provisional |
 | Carrier PCB | 72 × 32.6 mm, with 1.5 mm corner radius, from vendor V1.1 CAD |
@@ -22,6 +22,7 @@ User choices: smallest practical case, roughly **1–2 hours** of use, a **remov
 | Closure | Four **M3 × 8 mm countersunk screws**, 90° heads up to 6.72 mm, into four **JROUTH M3 × 4 × 5 mm heat-set inserts** |
 | Insert pockets | **4.6 mm trial diameter × 5 mm deep** in 10 mm bosses; test the coupon before the case |
 | Access | Recessed screen window and small recessed button holes; optional clear PET screen cover |
+| Rocker switch opening | **13.5 × 8.4 mm**, exactly the same aperture as the camera anchor, on the BAT-connector long side |
 | Charging | Battery removed and connected to an external charger; default case covers both tag USB ports |
 | Carrying | Pocket-size body plus two holes for soft cord / attachment to a garment clip |
 | Material | Plain, unfilled PETG suggested; no metal coating or carbon/metal-filled filament |
@@ -34,12 +35,35 @@ This is about the size of a thick remote, suitable for checking against your act
 - [OpenSCAD source](enclosure.scad): all dimensions and clearances are editable; `part="print_plate"` is the default.
 - [Fit gauge](fit-gauge.stl): print this first. It checks the nominal PCB footprint and four-hole pattern, not component height or battery fit.
 - [Insert fit coupon](insert-coupon.stl): print before the enclosure; five labeled holes from 4.4 to 4.8 mm for your actual inserts and filament.
+- [Switch fit coupon](switch-coupon.stl): exact 13.5 × 8.4 mm opening through the tag's 1.6 mm wall; check the rocker clips before printing the shell.
 - [Front shell](front.stl), [rear cover](rear.stl), [battery shield](shield.stl).
 - [Three-part print plate](print-plate.stl): already oriented on the print bed, in millimeters, at 100% scale.
+- [Switch location and dimensions](switch-preview.png): assembled view and dimensioned view of the exported side wall.
 - [Mesh checks](mesh-checks.json): closed meshes, dimensions and checks for volumetric interference against simplified reference geometry.
 - [Vendor measurements](vendor-measurements.json): extracted XY data, provenance, and provisional values.
 
-Print the board gauge and insert coupon first, then **either** the three-part print plate **or** the individual front, rear and shield files. The plate already contains those three case parts; it does not include the gauge or coupon. Rev C replaces all three enclosure parts from earlier revisions; do not mix them. The PCB fit gauge is unchanged and does not need reprinting if you already have it.
+Print the board gauge, insert coupon and switch coupon first, then **either** the three-part print plate **or** the individual front, rear and shield files. The plate already contains those three case parts; it does not include the gauge or coupons. **Rev D changes only the front shell relative to rev C.** Reuse your rev C rear cover and battery shield; reprint [front.stl](front.stl) to add the opening. The PCB gauge and insert coupon are unchanged. Revisions before C use different closure geometry and should not be mixed with this set.
+
+## Same rocker opening as the camera anchor
+
+The front shell now has the anchor's exact **13.5 mm wide × 8.4 mm high rectangular aperture**, with no additional tolerance, rounded corners or chamfer. It fits the same measured **13.27 × 8.18 mm KCD11-101 style switch body** on the drawing, giving **0.23 × 0.22 mm total clearance**. See the [anchor switch reference](../mauwb-anchor/README.md#exact-rocker-opening-and-charging).
+
+The hole is on the **BAT-connector long side (+Y)**, above the PCB and the closure boss near the buttons. Its center is **x=48 mm, z=19 mm** in assembly coordinates; its outside wall is **y=44.3 mm**. Width runs along the case length and height through its thickness. There is **2.75 mm of plastic to the outer top**. Overall case dimensions remain **89.7 × 54.3 × 25.95 mm**.
+
+![Tag rocker opening and dimensions](switch-preview.png)
+
+The switch's approximately **15 mm installed depth including terminals** gets a **20 mm reserved corridor** inward from the outer wall. The modeled body clears the top of the PCB by **0.56 mm**. That corridor clears the simplified screen and radio envelopes and the printed parts. Actual flange, clips, terminal spread, insulation and bent wires are not modeled; check them on the real assembly. Keep leads in the BAT-connector side lane, clear of the antenna and case joint.
+
+The tag wall is **1.6 mm**, compared with the anchor's **1.8 mm**. Print the tag's [switch coupon](switch-coupon.stl), **23.5 × 18.4 × 1.6 mm**, to check both aperture fit and clip retention at this thickness. The same hole dimensions do not establish printed fit or clip grip. The opening can be disabled with `switch_opening=false` when regenerating a shell without a switch.
+
+Use the rocker in a removable battery-extension harness, with the switch **in series with battery positive**, and keep battery negative continuous:
+
+```text
+Battery + ---- rocker ---- tag BAT positive
+Battery - --------------- tag BAT ground
+```
+
+Verify connector polarity as described below, insulate both switch terminals, and assemble with the battery unplugged. Neither switch terminal connects to ground. With USB disconnected, open contacts turn the tag off. The battery still comes out for external charging; the switch does not change the stock charger's current or provide in-case charging. No tag PCB modification is required for this harness.
 
 ### M3 screw fit
 
@@ -119,19 +143,19 @@ Test with the gimbal disarmed: establish a stationary reference at 2–3 m, then
 
 Start with a 0.4 mm nozzle, 0.2 mm layers, and four perimeters in plain PETG. PLA is suitable for the fit gauge and a first fit trial. The provided orientations aim to avoid supports; inspect your slicer's preview, especially the locating pins and thin shield. Print the 1.2 mm shield solid. Do not sand or drill the case with the electronics or battery inside it.
 
-1. Check the board gauge and insert coupon, then dry-fit the empty shell and cover. Heat-install four M3 × 4 × 5 mm inserts flush in the front shell, with the rear opening facing upward. Let them cool and clear any debris before installing electronics. Lightly trial-fit the four M3 × 8 mm countersunk screws with the empty rear cover in place. Confirm the screw ends cannot bottom out or protrude into the electronics space; do not substitute longer screws.
+1. Check the board gauge, insert coupon and switch coupon, then dry-fit the empty shell and cover. Heat-install four M3 × 4 × 5 mm inserts flush in the front shell, with the rear opening facing upward. Let them cool and clear any debris before installing electronics. Lightly trial-fit the four M3 × 8 mm countersunk screws with the empty rear cover in place. Confirm the screw ends cannot bottom out or protrude into the electronics space; do not substitute longer screws. Install the rocker and its insulated extension harness with the cell unplugged, checking its clips, flange and terminal clearance.
 2. Place the front shell **screen side down** on a soft, clean surface. Install the tag component side toward the screen window, locating the PCB on the four pegs. Its corner pads support the PCB; the radio module and screen must remain free of pressure. Do not fit the loose expansion headers.
 3. Fit a clear PET sheet if desired: approximately **32.8 × 20.3 × 0.5 mm** for the default recess, with thin perimeter adhesive. Verify actual printed recess dimensions first. Without this sheet the OLED window is open; the case does not protect the glass from objects entering it.
 4. Put the protected cell in the rear cover's cradle with a thin nonconductive protective pad or pull tab if needed. The total available vertical allowance is only 1 mm; allow at least some free space and never tighten the case to compress a pouch cell. The cell's protected/lead end faces the wire-exit notch near the board's BAT connector.
 5. Lay the separate rigid shield on the cradle rim over the battery. Its notches clear the locator columns, closure bosses and battery lead. The shield keeps solder joints away from the cell; it must not rest directly on or press the pouch.
-6. Route the lead through the notch and up the connector-side lane. Plug into BAT only after checking polarity. Fold spare lead gently in that lane, clear of screws, PCB supports, lid joints and the radio module. Wire fit is a physical check: the reference CAD does not model every bend of the 102 mm cable.
+6. Route the lead through the notch and up the connector-side lane to the switched extension harness. Keep the rocker OFF; plug into BAT only after checking polarity. Fold spare lead gently in that lane, clear of screws, PCB supports, lid joints and the radio module. Leave enough slack to open the rear cover and unplug the battery. Wire fit is a physical check: the reference CAD does not model every bend of the cable and added switch harness.
 7. Close the rear cover and lightly tighten the four screws. It should seat without force. Confirm the board is captured at its corners and that nothing rattles enough to strain the lead. Any resistance requires inspection, not more screw torque.
 
-There is **no added power switch** in this first version; disconnect BAT to switch the tag off. For removal or charging, lay the case screen-down before opening it, lift the rear cover only enough to reach the connector, and disconnect the battery by its plug housing rather than pulling its wires. The rear cover also retains the PCB, so support the board while open. Lift the shield and remove the cell, then charge it outside the case and outside your pocket, on a suitable nonflammable surface while attended. A damaged, swollen or hot cell must not be forced back into the enclosure.
+Use the rocker to switch battery power off. For removal or charging, switch OFF, lay the case screen-down before opening it, lift the rear cover only enough to reach the connector, and disconnect the battery from the extension harness by its plug housing rather than pulling its wires. The battery-side switch terminal remains live while the cell is connected. The rear cover also retains the PCB, so support the board while open. Lift the shield and remove the cell, then charge it outside the case and outside your pocket, on a suitable nonflammable surface while attended. A damaged, swollen or hot cell must not be forced back into the enclosure.
 
 ## Regenerate and inspect
 
-Open `enclosure.scad` and select `assembly` or `exploded` to inspect the layout. Reference electronics are simplified colored boxes and are excluded from the printable parts. Set `part` to `front`, `rear`, `shield`, `fit_gauge`, `insert_coupon` or `print_plate` before exporting an STL.
+Open `enclosure.scad` and select `assembly` or `exploded` to inspect the layout. Reference electronics and the orange switch-clearance corridor are simplified boxes and are excluded from the printable parts. Set `part` to `front`, `rear`, `shield`, `fit_gauge`, `insert_coupon`, `switch_coupon` or `print_plate` before exporting an STL.
 
 From the repository root:
 
@@ -139,7 +163,7 @@ From the repository root:
 python3 tools/build_tag_enclosure.py
 ```
 
-The script uses OpenSCAD, NumPy and Pillow, exports the six printable meshes, checks connected/watertight geometry, checks for positive-volume intersections with the nominal reference envelopes, and produces `preview.png` and `mesh-checks.json`. It accepts `--openscad /path/to/openscad`. The default exports have been checked with **OpenSCAD 2015.03-3**. Intentional touching faces may appear in its collision-only exports with a non-manifold warning; those diagnostic surfaces are not printable parts.
+The script uses OpenSCAD, NumPy and Pillow, exports seven printable meshes, checks connected/watertight geometry, and checks for positive-volume intersections with the nominal reference envelopes, including the reserved switch corridor. It probes both faces of the exported aperture and coupon at their corners and ±0.01 mm around each edge, and checks the dimensions against the anchor source. It produces `preview.png`, `switch-preview.png` and `mesh-checks.json`. It accepts `--openscad /path/to/openscad`. The default exports have been checked with **OpenSCAD 2015.03-3**. Intentional touching faces may appear in its collision-only exports with a non-manifold warning; those diagnostic surfaces are not printable parts.
 
 Source coordinates use the vendor's top/component-side board view: x runs from USB toward the radio, y toward the BAT connector, and z toward the display. Model assembly origin z=0 is the back of the rear cover. The source's `top_clearance`, `bottom_component_height`, `bottom_clearance`, `radio_*`, battery dimensions and screen/USB access dimensions remain independently adjustable.
 
